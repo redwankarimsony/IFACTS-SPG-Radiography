@@ -1,4 +1,4 @@
 - [images_annotation_1](images_annotation_1)
-  Matching radiographs from 100 identies. Both Forensic case data (Antemortem -> Postmortem matches) and NIJ (Antemortem 1 -> Antemortem 2 matches) are included
+  Matching radiographs from 100 identies. Both Forensic case data (Antemortem -> Postmortem matches) and NIJ (Antemortem 1 -> Antemortem 2 matches) are included. Some identities have more than 2 associated images meaning more than 1 match between images can be made
 - [labels_annotation_1_2022-12-12-01-34-22](labels_annotation_1_2022-12-12-01-34-22)
-  .txt files coding a rectangle or polygon bounding the area of observer interest for matching features between the images_annotation_1
+  .txt files coding a rectangle or polygon bounding the area of observer interest for matching features between the images included images_annotation_1
