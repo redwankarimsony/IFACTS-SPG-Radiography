@@ -9,21 +9,23 @@ class SingleID(QWidget):
     def __init__(self, imageFolder, ID):
         super().__init__()
         mainLayout = QVBoxLayout()
-
-
-
         # Making the Image Display layout
-        imageFiles = glob.glob(f"{imageFolder}/{ID}*.jpg")
+        imgFiles = []
+        imgFormats = ["jpg", "png", "jpeg", "bmp"]
+        for imgFormat in imgFormats:
+            imgFiles.extend(glob.glob(osp.join(imageFolder, f"{ID}_*.{imgFormat}")))
+            imgFiles.extend(glob.glob(osp.join(imageFolder, f"{ID}_*.{imgFormat.upper()}")))
+
         imageLayout = QHBoxLayout()
-        for imageFile in imageFiles:
-            imageLayout.addWidget(self.getImageWidget(imageURL=imageFile))
+        for imgFile in imgFiles:
+            imageLayout.addWidget(self.getImageWidget(imageURL=imgFile))
 
 
         mainLayout.addLayout(imageLayout)
 
         self.setLayout(mainLayout)
-        self.setMaximumHeight(1024)
-        self.setMaximumWidth(1024)
+        # self.setMaximumHeight(1024)
+        # self.setMaximumWidth(1024)
 
 
     @staticmethod
@@ -36,6 +38,7 @@ class SingleID(QWidget):
         imageLabel = QLabel()
         widget = QLabel()
         imageLabel.setPixmap(QPixmap(imageURL).scaled(512, 512, Qt.KeepAspectRatio))
+        imageLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(imageLabel)
         textLabel = QLabel(imageURL.split("/")[-1])
         textLabel.setAlignment(Qt.AlignCenter)

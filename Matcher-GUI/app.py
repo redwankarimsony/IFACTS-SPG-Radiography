@@ -12,34 +12,52 @@ class ImageViewer(QWidget):
     def __init__(self, imageFolder):
         super().__init__()
         self.IDs = self.getAllIDs(imageFolder=imageFolder)
-        self.currrentIDx = 0 
+        self.currentIDx = 0
+        self.imageFolder = imageFolder 
 
-        mainLayout = QVBoxLayout()
+        self.mainLayout = QVBoxLayout()
 
         # Making the Navigation layout
         self.navLayout = QHBoxLayout()
-
         self.prevBtn = QPushButton("Prev")
         self.nextbtn = QPushButton("Next")
-        self.idLabel = QLabel(self.IDs[self.currrentIDx])
+        self.prevBtn.clicked.connect(self.prevBtnAction)
+        self.nextbtn.clicked.connect(self.nextBtnAction)
+
+        self.idLabel = QLabel(self.IDs[self.currentIDx])
+        self.idLabel.setAlignment(Qt.AlignCenter)
 
         self.navLayout.addWidget(self.prevBtn)
         self.navLayout.addWidget(self.idLabel)
         self.navLayout.addWidget(self.nextbtn)
 
+        self.imgWidget = SingleIDImageViewer(imageFolder=self.imageFolder, ID=self.IDs[self.currentIDx])
+        self.mainLayout.addLayout(self.navLayout)
+        self.mainLayout.addWidget(self.imgWidget)
 
-        mainLayout.addLayout(self.navLayout)
-        self.setLayout(mainLayout)
+        self.setLayout(self.mainLayout)
 
     def nextBtnAction(self):
         if self.currentIDx+1 != len(self.IDs):
-            self.currrentIDx+=1
-            self.idLabel = QLabel(self.IDs[self.currrentIDx])
+            self.currentIDx+=1
+            self.idLabel.setText(self.IDs[self.currentIDx])
+            self.replaceImageLayout()
+ 
+
+
 
     def prevBtnAction(self):
             if self.currentIDx-1 >0:
-                self.currrentIDx-=1
-                self.idLabel = QLabel(self.IDs[self.currrentIDx])
+                self.currentIDx-=1
+                self.idLabel.setText(self.IDs[self.currentIDx])
+                self.replaceImageLayout()
+
+    def replaceImageLayout(self):
+        imgWidgetOld = self.mainLayout.itemAt(1).widget()
+        imgWidgetOld.setParent(None)
+        self.imgWidget = SingleIDImageViewer(imageFolder=self.imageFolder, ID=self.IDs[self.currentIDx])
+        self.mainLayout.addWidget(self.imgWidget)
+
 
     
     @staticmethod
@@ -53,7 +71,6 @@ class ImageViewer(QWidget):
 
         IDs = set()
         for imgFile in imgFiles:
-            print(imgFile)
             ID = imgFile.split("/")[-1].split("_")[0]
             IDs.add(ID)
         return sorted(list(IDs))
