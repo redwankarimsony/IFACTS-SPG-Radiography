@@ -8,11 +8,22 @@ import sys
 class SingleID(QWidget):
     def __init__(self, imageFolder, ID):
         super().__init__()
+        mainLayout = QVBoxLayout()
+
+
+
+        # Making the Image Display layout
         imageFiles = glob.glob(f"{imageFolder}/{ID}*.jpg")
-        layout = QHBoxLayout()
+        imageLayout = QHBoxLayout()
         for imageFile in imageFiles:
-            layout.addWidget(self.getImageWidget(imageURL=imageFile))
-        self.setLayout(layout)
+            imageLayout.addWidget(self.getImageWidget(imageURL=imageFile))
+
+
+        mainLayout.addLayout(imageLayout)
+
+        self.setLayout(mainLayout)
+        self.setMaximumHeight(1024)
+        self.setMaximumWidth(1024)
 
 
     @staticmethod
@@ -33,7 +44,7 @@ class SingleID(QWidget):
         widget.setLayout(layout)
         return widget
 
-        
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SingleID(imageFolder="../Annotation/images_annotation_1", ID="012")
