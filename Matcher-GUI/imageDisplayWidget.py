@@ -1,7 +1,7 @@
 import os.path as osp
 import glob
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
 import sys
 
@@ -37,12 +37,15 @@ class SingleID(QWidget):
         layout = QVBoxLayout()
         imageLabel = QLabel()
         widget = QLabel()
-        imageLabel.setPixmap(QPixmap(imageURL).scaled(512, 512, Qt.KeepAspectRatio))
+        imageLabel.setPixmap(QPixmap(imageURL).scaled(800, 800, Qt.KeepAspectRatio))
         imageLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(imageLabel)
         textLabel = QLabel(imageURL.split("/")[-1])
         textLabel.setAlignment(Qt.AlignCenter)
-        textLabel.setStyleSheet("border: 1px solid black;")
+        textLabel.setGeometry(0, 0, 800, 50)
+        textLabel.setFixedHeight(50)
+        textLabel.setStyleSheet("border: 1px solid black; ")
+        textLabel.setFont(QFont("Times", 24))
         layout.addWidget(textLabel)
         widget.setLayout(layout)
         return widget
