@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLa
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
 import sys
+from config import config
 
 class SingleID(QWidget):
     def __init__(self, imageFolder, ID):
@@ -37,7 +38,9 @@ class SingleID(QWidget):
         layout = QVBoxLayout()
         imageLabel = QLabel()
         widget = QLabel()
-        imageLabel.setPixmap(QPixmap(imageURL).scaled(800, 800, Qt.KeepAspectRatio))
+        imageLabel.setPixmap(QPixmap(imageURL).scaled(config.displayImageWidth,
+                                                      config.displayImageHeight,
+                                                      Qt.KeepAspectRatio))
         imageLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(imageLabel)
         textLabel = QLabel(imageURL.split("/")[-1])
