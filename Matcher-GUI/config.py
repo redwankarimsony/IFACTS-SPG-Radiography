@@ -9,7 +9,7 @@ config = edict({
 
 
     "displayImageWidth": 800,
-    "displayImageHeight":800,
+    "displayImageHeight": 800,
     "ImageLabelSize:": 24,
 })
 

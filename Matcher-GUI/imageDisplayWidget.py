@@ -21,12 +21,8 @@ class SingleID(QWidget):
         for imgFile in imgFiles:
             imageLayout.addWidget(self.getImageWidget(imageURL=imgFile))
 
-
         mainLayout.addLayout(imageLayout)
-
         self.setLayout(mainLayout)
-        # self.setMaximumHeight(1024)
-        # self.setMaximumWidth(1024)
 
 
     @staticmethod
