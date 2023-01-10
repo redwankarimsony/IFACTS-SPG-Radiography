@@ -8,6 +8,8 @@ from PyQt5.QtGui import QPixmap, QFont, QIcon
 from PyQt5.QtCore import Qt
 from config import config
 from imageDisplayWidget import SingleID
+from imageGridLayout import ImageGrid
+from verification.verification_module import getTopKPredictions
 
 
 class SearchEngine(QWidget):
@@ -50,8 +52,11 @@ class SearchEngine(QWidget):
         widget.setFixedWidth(800)
         self.inputDispLayout.addWidget(widget)
 
-
-        self.nextBtn.clicked.connect(self.openFileNameDialog)
+        results = getTopKPredictions(probe="123_AM_Chest_AP1.png",
+                                     galleryDir="/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/",
+                                     K=10)
+        print(results)
+        self.resultLayout.addWidget(ImageGrid(results=results))
 
     @staticmethod
     def getAll_PM_Xrays(imgDir, phase="PM"):

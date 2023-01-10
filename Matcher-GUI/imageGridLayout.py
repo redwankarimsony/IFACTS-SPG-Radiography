@@ -10,9 +10,16 @@ from imageDisplayWidget import SingleID
 
 
 class ImageGrid(QWidget):
-    def __init__(self, imagePaths):
+    def __init__(self, results):
+        """
+
+        Parameters
+        ----------
+        results: This is a list of lists. each of the elements of the list is another list.
+        [[filepath1, label1, score1], [filepath2, label2, score2], ...]
+        """
         super().__init__()
-        self.imagePaths = imagePaths
+        self.results = results
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
 
@@ -23,17 +30,20 @@ class ImageGrid(QWidget):
     def initGUI(self):
         idx = 0
 
-        if len(self.imagePaths):
-            for row in range((len(self.imagePaths)//self.num_cols)+1):
+        if len(self.results):
+            for row in range((len(self.results) // self.num_cols) + 1):
                 for column in range(self.num_cols):
-                    widget = SingleID.getImageWidget(self.imagePaths[idx])
+                    widget = SingleID.getImageWidget(self.results[idx][0],
+                                                     label= self.results[idx][1],
+                                                     score=self.results[idx][2] if len(self.results[idx]) == 3 else
+                                                     self.results[idx][1])
                     print(row, column)
                     self.mainLayout.addWidget(widget, row, column)
                     idx += 1
-                    if idx >= len(self.imagePaths):
+                    if idx >= len(self.results):
                         # break the inner loop in columns
                         break
-                if idx >= len(self.imagePaths):
+                if idx >= len(self.results):
                     # break the outer loop for row stop
                     break
 
