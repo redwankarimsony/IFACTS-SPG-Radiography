@@ -15,7 +15,11 @@ from verification.verification_module import getTopKPredictions
 class SearchEngine(QWidget):
     def __init__(self, imageFolder):
         super().__init__()
+        self.width = 1920
+        self.height = 1080
+        self.inputPaneWidth = 600
         self.imageFolder = imageFolder
+        self.imgIdx = 0
         sizeObject = QDesktopWidget().screenGeometry(-1)
         self.setWindowIcon(QIcon(config.appIcon))
         self.setFixedSize(int(sizeObject.width() * .7), int(sizeObject.height() * .7))
@@ -28,17 +32,25 @@ class SearchEngine(QWidget):
         # Making the Navigation layout
         self.navLayout = QHBoxLayout()
         self.prevBtn = QPushButton("Prev")
-        self.prevBtn.setFixedHeight(50)
+        self.prevBtn.setFixedSize(self.inputPaneWidth // 2.1, 50)
         self.prevBtn.setFont(QFont("Times", config.ImageDirLabelSize))
+        self.prevBtn.clicked.connect(self.prevBtnAction)
         self.nextBtn = QPushButton("Next")
-        self.nextBtn.setFixedHeight(50)
+        self.nextBtn.setFixedSize(self.inputPaneWidth // 2.1, 50)
         self.nextBtn.setFont(QFont("Times", config.ImageDirLabelSize))
+        self.nextBtn.clicked.connect(self.nextBtnAction)
+
+        self.searchBtn = QPushButton("Search")
+        self.searchBtn.setFixedSize(self.inputPaneWidth // 1.1, 50)
+        self.searchBtn.setFont(QFont("Times", config.ImageDirLabelSize))
+        self.searchBtn.clicked.connect(self.processSingleImage)
 
         self.navLayout.addWidget(self.prevBtn)
         self.navLayout.addWidget(self.nextBtn)
 
         self.inputLayout.addLayout(self.navLayout)
         self.inputLayout.addLayout(self.inputDispLayout)
+        self.inputLayout.addWidget(self.searchBtn)
 
         self.mainLayout.addLayout(self.inputLayout)
         self.mainLayout.addLayout(self.resultLayout)
@@ -47,16 +59,58 @@ class SearchEngine(QWidget):
         self.PMXrays = self.getAll_PM_Xrays(self.imageFolder, phase="PM")
         self.AMXrays = self.getAll_PM_Xrays(self.imageFolder, phase="AM")
 
-        print(osp.join(self.imageFolder, self.PMXrays[0]))
-        widget = SingleID.getImageWidget(osp.join(self.imageFolder, self.PMXrays[0]))
-        widget.setFixedWidth(800)
+        print(osp.join(self.imageFolder, self.PMXrays[self.imgIdx]))
+
+        widget = SingleID.getImageWidget(osp.join(self.imageFolder, self.PMXrays[self.imgIdx]))
+        widget.setFixedWidth(512)
         self.inputDispLayout.addWidget(widget)
 
-        results = getTopKPredictions(probe="123_AM_Chest_AP1.png",
+        result_dummy = QLabel("")
+        self.resultLayout.addWidget(result_dummy)
+        self.ToggleButtonActivation()
+
+    def processSingleImage(self):
+        results = getTopKPredictions(probe=self.PMXrays[self.imgIdx],
                                      galleryDir="/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/",
                                      K=10)
         print(results)
+        for i in reversed(range(self.resultLayout.count())):
+            widgetToRemove = self.resultLayout.itemAt(i).widget()
+            # remove it from the layout list
+            self.resultLayout.removeWidget(widgetToRemove)
+            # remove it from the gui
+            widgetToRemove.setParent(None)
         self.resultLayout.addWidget(ImageGrid(results=results))
+
+    def nextBtnAction(self):
+        self.imgIdx += 1
+        self.ToggleButtonActivation()
+        self.updateInputDisplayImage()
+
+    def prevBtnAction(self):
+        self.imgIdx -= 1
+        self.ToggleButtonActivation()
+        self.updateInputDisplayImage()
+
+    def updateInputDisplayImage(self):
+        newWidget = SingleID.getImageWidget(osp.join(self.imageFolder, self.PMXrays[self.imgIdx]))
+        newWidget.setFixedWidth(512)
+        oldWidget = self.inputDispLayout.itemAt(0).widget()
+        self.inputDispLayout.replaceWidget(oldWidget, newWidget)
+        oldWidget.setParent(None)
+
+        if self.imgIdx == len(self.PMXrays) - 1:
+            self.nextBtn.setEnabled(False)
+
+    def ToggleButtonActivation(self):
+        if self.imgIdx > 0:
+            self.prevBtn.setEnabled(True)
+        else:
+            self.prevBtn.setEnabled(False)
+        if self.imgIdx < len(self.PMXrays) - 1:
+            self.nextBtn.setEnabled(True)
+        else:
+            self.nextBtn.setEnabled(False)
 
     @staticmethod
     def getAll_PM_Xrays(imgDir, phase="PM"):

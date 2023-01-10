@@ -4,9 +4,8 @@ import numpy
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from networks.SiameseNetwork import SiameseNetwork
-from SiameseDatasetIFACTS import SiameseDatasetIFACTS
-
+from .networks.SiameseNetwork import SiameseNetwork
+from .SiameseDatasetIFACTS import SiameseDatasetIFACTS
 
 # from utils import Utils
 # from sklearn import metrics
@@ -16,8 +15,7 @@ import torchvision.transforms as transforms
 # import argparse
 from tqdm import tqdm
 
-image_size=256
-
+image_size = 256
 
 transform = transforms.Compose([
     transforms.Resize((image_size, image_size)),
@@ -28,18 +26,21 @@ transform = transforms.Compose([
 
 def loadModel():
     # Load the pre-trained model
+    savedModel = os.path.join(os.path.dirname(__file__),
+                              'trained_models/verification_approach_final_model_IFACTS.pth')
     if torch.cuda.is_available():
         model = SiameseNetwork(network='ResNet-50', in_channels=3, n_features=128).cuda()
         model = nn.DataParallel(model)
-        model.load_state_dict(torch.load('./trained_models/verification_approach_final_model_IFACTS.pth'))
+        model.load_state_dict(torch.load(savedModel))
     else:
         model = SiameseNetwork(network='ResNet-50', in_channels=3, n_features=128)
         model.load_state_dict(
-            torch.load('./trained_models/verification_approach_final_model_IFACTS.pth', map_location='cpu'))
+            torch.load(savedModel, map_location='cpu'))
 
     return model
 
-def getMatchScores(model, probe, gallery):
+
+def getMatchScores(model, probe, gallery, imgDir):
     pairs = [(probe, x) for x in gallery]
 
     ds_test = SiameseDatasetIFACTS(transform=transform, image_path=imgDir, image_pairs=pairs)
@@ -78,10 +79,29 @@ def getMatchScores(model, probe, gallery):
     return gallery, y_true, y_pred
 
 
+def getTopKPredictions(probe: str, galleryDir: str, K=10):
+    allFiles, imgFiles = os.listdir(galleryDir), []
+    for fileName in allFiles:
+        if not fileName.endswith("txt"):
+            imgFiles.append(fileName)
+    imgFiles = sorted(imgFiles)
+    if probe in imgFiles:
+        imgFiles.remove(probe)
+
+    imageNames, y_true, y_pred = getMatchScores(loadModel(), probe=probe, gallery=imgFiles, imgDir=galleryDir)
+
+    results = [[a, b.item(), c.item()] for a, b, c in zip(imageNames, y_true, y_pred)]
+
+    sorted_results = sorted(results, key=lambda x: x[2], reverse=True)
+    # adding image paths
+    for i in range(len(sorted_results)):
+        sorted_results[i][0] = os.path.join(galleryDir, sorted_results[i][0])
+
+    return sorted_results[:K]
 
 
 if __name__ == "__main__":
-    imgDir="/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/"
+    imgDir = "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/"
     allFiles, imgFiles = os.listdir(imgDir), []
     for fileName in allFiles:
         if not fileName.endswith("txt"):
@@ -91,22 +111,14 @@ if __name__ == "__main__":
     probe = imgFiles[108]
     imgFiles.remove(probe)
 
-    imageNames, y_true, y_pred = getMatchScores(loadModel(), probe=probe, gallery=imgFiles)
+    imageNames, y_true, y_pred = getMatchScores(loadModel(), probe=probe, gallery=imgFiles, imgDir=imgDir)
 
     results = [(a, b.item(), c.item()) for a, b, c in zip(imageNames, y_true, y_pred)]
 
-    def score(x):
-        return x[2]
+    # def score(x):
+    #     return x[2]
 
-    sorted_results = sorted(results, key=score, reverse=True)
+    sorted_results = sorted(results, key=lambda x: x[2], reverse=True)
     print(probe)
     for res in sorted_results:
         print(res)
-
-
-
-
-
-
-
-
