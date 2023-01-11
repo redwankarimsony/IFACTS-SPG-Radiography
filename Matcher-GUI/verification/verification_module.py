@@ -15,8 +15,10 @@ import torchvision.transforms as transforms
 # import argparse
 from tqdm import tqdm
 
-image_size = 256
 
+
+
+image_size = 256
 transform = transforms.Compose([
     transforms.Resize((image_size, image_size)),
     transforms.ToTensor(),
@@ -79,7 +81,7 @@ def getMatchScores(model, probe, gallery, imgDir):
     return gallery, y_true, y_pred
 
 
-def getTopKPredictions(probe: str, galleryDir: str, K=10):
+def getTopKPredictions(model, probe: str, galleryDir: str, K=10):
     allFiles, imgFiles = os.listdir(galleryDir), []
     for fileName in allFiles:
         if not fileName.endswith("txt"):
@@ -88,7 +90,7 @@ def getTopKPredictions(probe: str, galleryDir: str, K=10):
     if probe in imgFiles:
         imgFiles.remove(probe)
 
-    imageNames, y_true, y_pred = getMatchScores(loadModel(), probe=probe, gallery=imgFiles, imgDir=galleryDir)
+    imageNames, y_true, y_pred = getMatchScores(model, probe=probe, gallery=imgFiles, imgDir=galleryDir)
 
     results = [[a, b.item(), c.item()] for a, b, c in zip(imageNames, y_true, y_pred)]
 

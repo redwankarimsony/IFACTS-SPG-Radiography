@@ -9,14 +9,14 @@ from PyQt5.QtCore import Qt
 from config import config
 from imageDisplayWidget import SingleID
 from imageGridLayout import ImageGrid
-from verification.verification_module import getTopKPredictions
+from verification import *
 
 
 class SearchEngine(QWidget):
     def __init__(self, imageFolder):
         super().__init__()
         self.width = 1920
-        self.height = 1080
+        self.height = 1920
         self.inputPaneWidth = 600
         self.imageFolder = imageFolder
         self.imgIdx = 0
@@ -68,9 +68,12 @@ class SearchEngine(QWidget):
         result_dummy = QLabel("")
         self.resultLayout.addWidget(result_dummy)
         self.ToggleButtonActivation()
+        self.model = loadModel()
+
 
     def processSingleImage(self):
-        results = getTopKPredictions(probe=self.PMXrays[self.imgIdx],
+        results = getTopKPredictions(self.model,
+                                     probe=self.PMXrays[self.imgIdx],
                                      galleryDir="/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/",
                                      K=10)
         print(results)
