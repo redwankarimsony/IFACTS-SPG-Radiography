@@ -6,6 +6,16 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+
+
+import glob
+import cv2
+import os.path as osp
+from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
 def bbox2points(bbox):
     """
     From bounding box yolo format
@@ -18,12 +28,7 @@ def bbox2points(bbox):
     ymax = y + (h / 2)
     return xmin, ymin, xmax, ymax
 
-import glob
-import cv2
-import os.path as osp
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import Qt
-from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
