@@ -62,7 +62,7 @@ def applyCLAHE(image, display: bool = False):
         plt.axis('off')
         plt.title("CLAHE Image")
         plt.show()
-    print(final_img.shape)
+    # print(final_img.shape)
     return final_img
 
 
@@ -104,8 +104,7 @@ def applyHistogramEqualization(image, display: bool = False):
 
         # Display the thresholded image
         fig.add_subplot(rows, cols, 2)
-        plt.imshow(img_enhanced, cmap=plt.cm.gray);
-        plt.axis('off')
+        plt.imshow(img_enhanced, cmap=plt.cm.gray);plt.axis('off')
         plt.title("Histogram Equalized Image")
 
         hists = getColorHist(img_enhanced)
@@ -191,11 +190,11 @@ def applyHFEFilter(image, display: bool = False):
 
 if __name__ == "__main__":
     img = cv2.imread("/home/sonymd/Downloads/ChestXray14Data/subset/00000003_005.png")
-    # applyCLAHE(img, display=True)
+    applyCLAHE(img, display=True)
     #
-    #
-    # applyHistogramEqualization(img, display=True)
 
-    output = applyHFEFilter(img, display=True)
+    applyHistogramEqualization(img, display=True)
 
-    applyHistogramEqualization(output, display=True)
+    applyHFEFilter(img, display=True)
+
+    # applyHistogramEqualization(output, display=True)

@@ -1,0 +1,30 @@
+{
+	"experiment_description": "ResNet50-100ID-T1-T5-150-ids",
+	"resumption": false,
+	"resumption_count": null,
+	"previous_experiment": null,
+
+	"image_path": "/home/sonymd/Downloads/Chest Radiograph Files/Chest_Radiograph",
+
+	"siamese_architecture": "ResNet-50",
+	"data_handling": "balanced",
+
+	"num_workers": 16,
+	"pin_memory": true,
+	"cuda_device": "cuda:0",
+
+	"n_channels": 3,
+	"n_features": 128,
+	"image_size": 256,
+	"loss": "BCEWithLogitsLoss",
+	"optimizer": "Adam",
+	"learning_rate": 0.000006,
+	"batch_size": 180,
+	"max_epochs": 100,
+	"early_stopping": 5,
+	"transform": "image_net",
+
+	"n_samples_train": 792294,
+	"n_samples_val": 50000,
+	"n_samples_test": 100000
+}
