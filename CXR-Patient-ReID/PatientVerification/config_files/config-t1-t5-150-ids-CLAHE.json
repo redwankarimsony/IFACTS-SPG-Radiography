@@ -1,5 +1,5 @@
 {
-	"experiment_description": "ResNet50-100ID-T1-T5-150-ids",
+	"experiment_description": "ResNet50-100ID-T1-T5-150-ids-CLAHE",
 	"resumption": false,
 	"resumption_count": null,
 	"previous_experiment": null,

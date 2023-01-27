@@ -1,10 +1,10 @@
 {
-	"experiment_description": "ResNet50-100ID-T1-T5-130-ids",
+	"experiment_description": "ResNet50-100ID-T1-T5",
 	"resumption": false,
 	"resumption_count": null,
 	"previous_experiment": null,
 
-	"image_path": "/home/sonymd/Downloads/Chest Radiograph Files/Chest_Radiograph",
+	"image_path": "/home/sonymd/Downloads/ChestXrayData/images/",
 
 	"siamese_architecture": "ResNet-50",
 	"data_handling": "balanced",
@@ -18,8 +18,8 @@
 	"image_size": 256,
 	"loss": "BCEWithLogitsLoss",
 	"optimizer": "Adam",
-	"learning_rate": 0.00006,
-	"batch_size": 180,
+	"learning_rate": 0.0006,
+	"batch_size": 192, 
 	"max_epochs": 100,
 	"early_stopping": 5,
 	"transform": "image_net",

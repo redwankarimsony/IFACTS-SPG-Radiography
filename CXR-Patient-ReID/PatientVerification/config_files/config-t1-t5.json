@@ -1,5 +1,5 @@
 {
-	"experiment_description": "ResNet50-100ID-T1-T5-130-ids",
+	"experiment_description": "ResNet50-100ID-T1-T5-ratio1-3-jitter",
 	"resumption": false,
 	"resumption_count": null,
 	"previous_experiment": null,
@@ -19,7 +19,7 @@
 	"loss": "BCEWithLogitsLoss",
 	"optimizer": "Adam",
 	"learning_rate": 0.00006,
-	"batch_size": 180,
+	"batch_size": 192, 
 	"max_epochs": 100,
 	"early_stopping": 5,
 	"transform": "image_net",
