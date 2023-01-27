@@ -17,7 +17,7 @@ class SiameseDatasetIFACTS(data.Dataset):
     """
 
     def __init__(self, img_dir, annot_dir, phase='testing', data_handling="balanced", n_channels=3, n_samples=32131,
-                 transform=None):
+                 transform=None, crop_box=True):
         self.img_dir = img_dir
         self.annot_dir = annot_dir
         self.phase = phase
@@ -25,6 +25,7 @@ class SiameseDatasetIFACTS(data.Dataset):
         self.n_channels = n_channels
         self.transform = transform
         self.data_handling = data_handling
+        self.crop_box = crop_box
         self.image_pairs = []
         self.pos_pairs = []
         self.neg_pairs = []
@@ -75,11 +76,18 @@ class SiameseDatasetIFACTS(data.Dataset):
         x1 = pil_loader(self.image_pairs[index][0], self.n_channels)
         x2 = pil_loader(self.image_pairs[index][1], self.n_channels)
 
-        boxYOLO1 = self.getLabel(self.image_pairs[index][0])
-        boxYOLO2 = self.getLabel(self.image_pairs[index][1])
+        if self.crop_box:
+            # Reading the bounding box information from label files.
+            boxYOLO1 = self.getLabel(self.image_pairs[index][0])
+            boxYOLO2 = self.getLabel(self.image_pairs[index][1])
+            # Cropping out the
+            x1 = cropImage(x1, boxYOLO1)
+            x2 = cropImage(x2, boxYOLO2)
+        else:
+            # This step crops the best square from the image.
+            x1 = squareCROP(x1)
+            x2 = squareCROP(x2)
 
-        # x1 = cropImage(x1, boxYOLO1)
-        # x2 = cropImage(x2, boxYOLO2)
 
         # x1 = apply_CLAHE(x1)
         # x2 = apply_CLAHE(x2)
