@@ -1,0 +1,13 @@
+{
+  "train_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/train/",
+  "test_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/test",
+  "width": 480,
+  "height": 480,
+
+
+  "batch_size": 32,
+  "num_workers": 16,
+  "pin_memory": true,
+  "cuda_device": "cuda:0"
+
+}
