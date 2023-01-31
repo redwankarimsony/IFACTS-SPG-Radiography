@@ -53,7 +53,7 @@ def main(config):
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict()
         }
-        # save_checkpoint(checkpoint, is_best, checkpoint_dir, model_dir)
+        save_checkpoint(checkpoint, True, "saved_models")
 
 
 if __name__ == "__main__":

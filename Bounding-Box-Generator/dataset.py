@@ -7,7 +7,7 @@ from matplotlib import patches
 
 from xml.etree import ElementTree as et
 from torch.utils.data import Dataset, DataLoader, Subset
-from pytorch_vision_library import utils
+import utils
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
@@ -38,7 +38,7 @@ class ObjectDetectionDataset(Dataset):
 
         # reading the images and converting them to correct size and color
         img = cv2.imread(image_path)
-        print(img.shape)
+        # print(img.shape)
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32)
         img_res = cv2.resize(img_rgb, (self.width, self.height), cv2.INTER_AREA)
         # diving by 255
@@ -178,18 +178,21 @@ def load_dataset(config):
                           batch_size=config["batch_size"],
                           shuffle=True,
                           num_workers=config["num_workers"],
+                          pin_memory=config["pin_memory"],
                           collate_fn=utils.collate_fn)
 
     dl_valid = DataLoader(dataset_valid,
                           batch_size=config["batch_size"],
                           shuffle=True,
                           num_workers=config["num_workers"],
+                          pin_memory=config["pin_memory"],
                           collate_fn=utils.collate_fn)
 
     dl_test = DataLoader(dataset_test,
                          batch_size=config["batch_size"] * 2,
                          shuffle=False,
                          num_workers=config["num_workers"],
+                         pin_memory=config["pin_memory"],
                          collate_fn=utils.collate_fn)
 
     return dl_train, dl_valid, dl_test
