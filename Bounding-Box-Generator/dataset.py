@@ -12,6 +12,33 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 
+class ObjectDetectionInferenceDataset(Dataset):
+    def __init__(self, files_dir, width, height, transforms):
+        self.transforms = transforms
+        self.files_dir = files_dir
+        self.height = height
+        self.width = width
+
+        self.image_paths = ObjectDetectionDataset.list_image_files(self.files_dir)
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        image_path = self.image_paths[idx]
+        # image_path = os.path.join(self.files_dir, img_name)
+
+        # reading the images and converting them to correct size and color
+        img = cv2.imread(image_path)
+        # print(img.shape)
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32)
+        img_res = cv2.resize(img_rgb, (self.width, self.height), cv2.INTER_AREA)
+        # diving by 255
+        img_res /= 255.0
+
+        return img_res, image_path
+
+
 class ObjectDetectionDataset(Dataset):
     """
     make sure you have all the images in the same folder and the
