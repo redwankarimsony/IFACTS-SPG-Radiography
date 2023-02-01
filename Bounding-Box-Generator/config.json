@@ -2,6 +2,7 @@
   "train_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/train/",
   "test_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/test",
   "infer_dir": "/home/sonymd/Downloads/ChestXray14Data/subset/",
+  "infer_save_dir": "/home/sonymd/Downloads/ChestXray14Data/subset-labels",
   "width": 480,
   "height": 480,
 
