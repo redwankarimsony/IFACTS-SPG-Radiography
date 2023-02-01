@@ -9,7 +9,11 @@ from xml.etree import ElementTree as et
 from torch.utils.data import Dataset, DataLoader, Subset
 import utils
 import albumentations as A
+from torchvision import transforms
+
 from albumentations.pytorch.transforms import ToTensorV2
+
+import matplotlib.pyplot as plt
 
 
 class ObjectDetectionInferenceDataset(Dataset):
@@ -35,6 +39,9 @@ class ObjectDetectionInferenceDataset(Dataset):
         img_res = cv2.resize(img_rgb, (self.width, self.height), cv2.INTER_AREA)
         # diving by 255
         img_res /= 255.0
+
+        if self.transforms:
+            img_res = self.transforms(image=img_res)["image"]
 
         return img_res, image_path
 
@@ -144,24 +151,57 @@ class ObjectDetectionDataset(Dataset):
                 img_files.append(os.path.join(img_dir, file_path))
         return img_files
 
-    @staticmethod
-    def plot_img_bbox(img, target):
-        # plot the image and bboxes
-        # Bounding boxes are defined as follows: x-min y-min width height
-        fig, a = plt.subplots(1, 1)
-        fig.set_size_inches(5, 5)
-        a.imshow(img)
-        for box in (target['boxes']):
-            x, y, width, height = box[0], box[1], box[2] - box[0], box[3] - box[1]
-            rect = patches.Rectangle((x, y),
-                                     width, height,
-                                     linewidth=2,
-                                     edgecolor='r',
-                                     facecolor='none')
 
-            # Draw the bounding box on top of the image
-            a.add_patch(rect)
-        plt.savefig("labeled_plot.png", dpi=300)
+def torch_to_pil(img):
+    """
+    Args:
+        img: a torch.tensor image [C x W x H]
+
+    Returns: PIL image of the same size
+
+    """
+    return transforms.ToPILImage()(img).convert('RGB')
+
+
+def coco_2_yolo(predictions, width=480, height=480):
+    boxes = predictions["boxes"].to("cpu").numpy()
+    labels = predictions["labels"].to("cpu").numpy()
+    scores = predictions["scores"].to("cpu").numpy()
+
+    box, label, score = boxes[0], labels[0], scores[0]
+    [xmin, ymin, xmax, ymax] = box
+    x = (xmin+xmax)/(2*width)
+    y = (ymin+ymax)/(2*height)
+    w = (xmax-xmin)/(width)
+    h = (ymax-ymin)/(height)
+    return [label, x, y, w, h]
+
+
+
+
+
+
+
+
+def plot_img_bbox(img, target):
+    # plot the image and bboxes
+    # Bounding boxes are defined as follows: x-min y-min width height
+    img = torch_to_pil(img)
+    print(img)
+    fig, a = plt.subplots(1, 1)
+    fig.set_size_inches(5, 5)
+    a.imshow(img)
+    for box in (target['boxes'].to("cpu")):
+        x, y, width, height = box[0], box[1], box[2] - box[0], box[3] - box[1]
+        rect = patches.Rectangle((x, y),
+                                 width, height,
+                                 linewidth=2,
+                                 edgecolor='r',
+                                 facecolor='none')
+
+        # Draw the bounding box on top of the image
+        a.add_patch(rect)
+    plt.savefig("labeled_plot.png", dpi=300)
 
 
 # Send train=True fro training transforms and False for val/test transforms
