@@ -1,7 +1,11 @@
 # Created by sonymd at 2/5/23
+# Mail: sonymd@msu.edu
+# GitHub: www.github.com/redwankarimsony
+# Graduate Researcher, iPRoBe Lab, CSE, MSU
 
 from torchvision.models import densenet
 from torchvision.models import efficientnet
+from torchsummary import summary
 import torch.nn as nn
 
 
@@ -30,10 +34,22 @@ def get_model(cfg):
         out_features = cfg["num_classes"]
         model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
 
+    elif cfg["model_arch"] == "efficientnet_b1":
+        model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
+        in_features = model.classifier[1].in_features
+        out_features = cfg["num_classes"]
+        model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
+
+    elif cfg["model_arch"] == "efficientnet_b2":
+        model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
+        in_features = model.classifier[1].in_features
+        out_features = cfg["num_classes"]
+        model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
+
     return model
 
 
 if __name__ == "__main__":
-    ml_model = get_model(cfg={"model_arch": "efficientnet_b0",
+    ml_model = get_model(cfg={"model_arch": "efficientnet_b2",
                               "num_classes": 280})
-    print(ml_model)
+    summary(ml_model.cuda(), (3, 224, 224))
