@@ -3,7 +3,7 @@
 # GitHub: www.github.com/redwankarimsony
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
 import os
-
+import os.path as osp
 import torch
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
@@ -20,7 +20,7 @@ class XrayDataset(Dataset):
         self.width = cfg.width
         self.height = cfg.height
         self.transform = transform
-        self.df = pd.read_csv(os.path.join(cfg.results_dir, "data_splits.csv"))
+        self.df = pd.read_csv(osp.join(cfg.results_dir, "data_splits.csv"))
         self.df = self.df[self.df["split"] == self.split].reset_index(drop=True)
         self.labels = {}
 
@@ -32,14 +32,14 @@ class XrayDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, f"{self.df.iloc[idx, 0]}.png")
-        annot_path = os.path.join(self.img_dir, f"{self.df.iloc[idx, 0]}.txt")
+        img_path = osp.join(self.img_dir, f"{self.df.iloc[idx, 0]}.png")
+        annot_path = osp.join(self.img_dir, f"{self.df.iloc[idx, 0]}.txt")
+
 
     def _load_labels(self):
         temp = pd.read_csv(f"{cfg.results_dir}/labels_mapping.csv")
         for idx, row in temp.iterrows():
             self.labels[row["ID"]] = row["label_idx"]
-
 
 
 def split_dataset(annot_dir=cfg.annot_dir):
@@ -83,10 +83,6 @@ def split_dataset(annot_dir=cfg.annot_dir):
             num_t = int(math.ceil(len(_files) * (1 - cfg.valid_ratio)))
             train_files.extend(_files[:num_t])
             valid_files.extend(_files[num_t:])
-            # if len(_files[num_t:])==1:
-            #     valid_files.append(_files[num_t:][0])
-            # else:
-            #     valid_files.extend(_files[num_t:])
 
     print(f"Total Images: {len(all_files)}",
           f"\nTrain Images: {len(train_files)}",
@@ -107,7 +103,7 @@ def split_dataset(annot_dir=cfg.annot_dir):
     df = pd.DataFrame({"image_id": image_ids,
                        "id": ids,
                        "split": splits})
-    csv_path = os.path.join(cfg.results_dir, "data_splits.csv")
+    csv_path = osp.join(cfg.results_dir, "data_splits.csv")
     df.to_csv(csv_path, index=False)
     print(f"Splits written at : ./{csv_path}")
 
