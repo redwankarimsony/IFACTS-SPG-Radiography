@@ -4,11 +4,11 @@
 # GitHub: www.github.com/redwankarimsony
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
 
-
-config = {
-    "experiment_name": 'base_experiment',
-    "img_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_2",
-    "annot_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/Three_ROI_280_identities",
-    "width": 224,
-    "height": 224,
-    "valid_ratio": 30}
+class cfg:
+    def __init__(self):
+        self.experiment_name = 'base_experiment'
+        self.img_dir= "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_2"
+        self.annot_dir= "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/Three_ROI_280_identities"
+        self.width= 224
+        self.height= 224
+        self.valid_ratio=30
