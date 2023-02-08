@@ -10,40 +10,41 @@ import torch.nn as nn
 
 
 def get_model(cfg):
-    if cfg["model_arch"] == "densenet121":
+    model = None
+    if cfg.model_arch == "densenet121":
         model = densenet.densenet121(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier = nn.Linear(in_features, out_features, bias=True)
 
-    elif cfg["model_arch"] == "densent161":
+    elif cfg.model_arch == "densent161":
         model = densenet.densenet161(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier = nn.Linear(in_features, out_features, bias=True)
 
-    elif cfg["model_arch"] == "densenet169":
+    elif cfg.model_arch == "densenet169":
         model = densenet.densenet169(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier = nn.Linear(in_features, out_features, bias=True)
 
-    elif cfg["model_arch"] == "efficientnet_b0":
+    elif cfg.model_arch == "efficientnet_b0":
         model = efficientnet.efficientnet_b0(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
 
-    elif cfg["model_arch"] == "efficientnet_b1":
+    elif cfg.model_arch == "efficientnet_b1":
         model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
 
-    elif cfg["model_arch"] == "efficientnet_b2":
+    elif cfg.model_arch == "efficientnet_b2":
         model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg["num_classes"]
+        out_features = cfg.num_classes
         model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
 
     return model
