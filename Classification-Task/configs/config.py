@@ -15,10 +15,24 @@ class configClass:
         self.width = 512
         self.height = 512
         self.valid_ratio = 0.5
-        self.box_preset = 0    #[0=(T1-T5 segment only),
-                        # 1= (Whole Vertebral Column Only)
-                        # 2= (T1-T5) with Clavicle
-                        # 3 =(Consider Whole Xray)]
+        self.box_preset = 0     #[0=(T1-T5 segment only),
+                                # 1= (Whole Vertebral Column Only)
+                                # 2= (T1-T5) with Clavicle
+                                # 3 =(Consider Whole Xray)]
+
+
+        self.model_arch = "densenet121"
+        self.num_classes = 281
+        self.pin_memory = True
+
+        self.stat_mean = [0.485, 0.456, 0.406]
+        self.stat_std = [0.229, 0.224, 0.225]
+
+        self.batch_size = 16
+        self.num_workers = min(self.batch_size, int(os.cpu_count()*0.8))
+        self.learning_rate = 0.0001
+
+
 
 
 
@@ -26,7 +40,7 @@ class configClass:
 
     def make_results_dir(self):
         try:
-            os.makedirs(self.results_dir, exist_ok=False)
+            os.makedirs(self.results_dir, exist_ok=True)
         except Exception as e:
             print(e)
 
