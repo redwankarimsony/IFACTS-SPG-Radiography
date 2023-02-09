@@ -1,3 +1,4 @@
+# config/config.py
 # Created by sonymd at 2/5/23
 # Mail: sonymd@msu.edu
 # GitHub: www.github.com/redwankarimsony
@@ -7,13 +8,15 @@
 import math
 import os
 import os.path as osp
+
 import cv2
-import numpy as np
-import torch
-import pandas as pd
 import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
+import numpy as np
+import pandas as pd
+import torch
 import torchvision.transforms as tf
+from torch.utils.data import Dataset, DataLoader
+
 from configs.config import cfg
 
 torch.manual_seed(1455)
@@ -171,7 +174,7 @@ def split_dataset(annot_dir=cfg.annot_dir):
                 _files = ID_labels[key]
                 if len(_files) == i:
                     count += 1
-                print(f"{i},{count}", file=fp)
+            print(f"{i},{count}", file=fp)
 
     # splitting up the train and validation images.
     for ID in _IDs:
@@ -221,6 +224,8 @@ def split_dataset(annot_dir=cfg.annot_dir):
 transfroms = torch.nn.Sequential(
     tf.Resize(512),
     tf.CenterCrop(512),
+    tf.RandomRotation(degrees=5),
+    tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
     tf.Normalize(mean=cfg.stat_mean, std=cfg.stat_std))
 
 if __name__ == "__main__":
