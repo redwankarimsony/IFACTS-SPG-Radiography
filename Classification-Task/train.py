@@ -90,17 +90,17 @@ if __name__ == "__main__":
                           persistent_workers=True)
     classifier = LightningTrainer(cfg)
 
-    early_stopper_callback = EarlyStopping(monitor="val_acc_epoch",
+    early_stopper_callback = EarlyStopping(monitor="val_loss",
                                            min_delta=0.00,
-                                           patience=10,
+                                           patience=30,
                                            verbose=False,
-                                           mode="max")
+                                           mode="min")
 
     checkpoint_callback = ModelCheckpoint(save_top_k=10,
                                           monitor="val_acc_epoch",
                                           mode="max",
                                           dirpath="saved_checkpoints",
-                                          filename="{densenet121}-{epoch:02d}-{val_acc:.2f}",
+                                          filename=cfg.model_arch+ "_{epoch:02d}-{val_acc_epoch:.2f}",
                                           )
 
     trainer = pl.Trainer(limit_train_batches=100,

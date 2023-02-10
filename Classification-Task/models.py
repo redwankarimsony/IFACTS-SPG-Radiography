@@ -8,50 +8,65 @@ import torch.nn as nn
 from torchsummary import summary
 from torchvision.models import densenet
 from torchvision.models import efficientnet
+from torchvision.models import resnet34, resnet50
+from torchvision.models import ResNet34_Weights, ResNet50_Weights
 
 
 def get_model(cfg):
-    model = None
+    if cfg.model_arch == "resnet34":
+        model = resnet34(weights=ResNet34_Weights.DEFAULT, progress=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
+
+    if cfg.model_arch == "resnet50":
+        model = resnet50(weights=ResNet50_Weights.DEFAULT, progress=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
+
     if cfg.model_arch == "densenet121":
         model = densenet.densenet121(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg.num_classes
-        model.classifier = nn.Linear(in_features, out_features, bias=True)
+        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
-    elif cfg.model_arch == "densent161":
+    elif cfg.model_arch == "densenet161":
         model = densenet.densenet161(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg.num_classes
-        model.classifier = nn.Linear(in_features, out_features, bias=True)
+        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
     elif cfg.model_arch == "densenet169":
         model = densenet.densenet169(pretrained=True, progress=True)
         in_features = model.classifier.in_features
-        out_features = cfg.num_classes
-        model.classifier = nn.Linear(in_features, out_features, bias=True)
+        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
     elif cfg.model_arch == "efficientnet_b0":
         model = efficientnet.efficientnet_b0(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg.num_classes
-        model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
     elif cfg.model_arch == "efficientnet_b1":
         model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg.num_classes
-        model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
     elif cfg.model_arch == "efficientnet_b2":
         model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
         in_features = model.classifier[1].in_features
-        out_features = cfg.num_classes
-        model.classifier[1] = nn.Linear(in_features, out_features, bias=True)
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
 
-    return model
+    return None
 
 
 if __name__ == "__main__":
-    ml_model = get_model(cfg={"model_arch": "efficientnet_b2",
-                              "num_classes": 280})
-    summary(ml_model.cuda(), (3, 224, 224))
+    from configs.config import cfg
+
+    ml_model = get_model(cfg)
+    print(ml_model)
+    # summary(ml_model.cuda(), (3, 512, 512))
