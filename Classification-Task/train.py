@@ -9,6 +9,7 @@ import torchmetrics
 
 from torch import optim, nn
 from torch.utils.data import DataLoader
+from pytorch_lightning import loggers
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from configs.config import cfg
@@ -36,12 +37,11 @@ class LightningTrainer(pl.LightningModule):
         y_hat = self.model(X)
         preds = self.softmax(y_hat)
         loss = self.loss_func(preds, y)
-
-        # preds = torch.argmax(y_hat, dim=1)
+        batch_size = len(X)
+        # logging the results
         self.train_acc(preds, y)
-        self.log("train_loss", loss, logger=True)
-        self.log("train_acc_step", self.train_acc)
-        self.log("train_batch_size", X.shape[0])
+        self.log("train_loss", loss, batch_size=batch_size, logger=True)
+        self.log("train_acc_step", self.train_acc, batch_size=batch_size)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -49,13 +49,14 @@ class LightningTrainer(pl.LightningModule):
         X, y, codes = batch
         y_hat = self.model(X)
         preds = self.softmax(y_hat)
-
         loss = self.loss_func(preds, y)
+        batch_size = len(X)
 
+        # logging the results
         self.val_acc(preds, y)
-        self.log("val_loss", loss, logger=True)
-        self.log("val_acc_step", self.val_acc)
-        self.log("val_batch_size", X.shape[0])
+        self.log("val_loss", loss, batch_size=batch_size, logger=True)
+        self.log("val_acc_step", self.val_acc, batch_size=batch_size)
+
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.model.parameters(), lr=self.cfg.learning_rate)
@@ -63,11 +64,9 @@ class LightningTrainer(pl.LightningModule):
 
     def training_epoch_end(self, train_step_output):
         self.log("train_acc_epoch", self.train_acc.compute(), sync_dist=True)
-        # self.train_acc.reset()
 
     def validation_epoch_end(self, val_step_output):
         self.log("val_acc_epoch", self.val_acc.compute(), sync_dist=True)
-        # self.val_acc.reset()
 
 
 if __name__ == "__main__":
@@ -92,23 +91,27 @@ if __name__ == "__main__":
 
     early_stopper_callback = EarlyStopping(monitor="val_loss",
                                            min_delta=0.00,
-                                           patience=30,
+                                           patience=50,
                                            verbose=False,
                                            mode="min")
 
     checkpoint_callback = ModelCheckpoint(save_top_k=10,
                                           monitor="val_acc_epoch",
                                           mode="max",
-                                          dirpath="saved_checkpoints",
-                                          filename=cfg.model_arch+ "_{epoch:02d}-{val_acc_epoch:.2f}",
+                                          dirpath=f"saved_checkpoints/box_{cfg.box_preset}/{cfg.model_arch}",
+                                          filename=cfg.model_arch + "_{epoch:02d}-{val_acc_epoch:.4f}",
                                           )
+    logger = loggers.TensorBoardLogger(save_dir="saved_checkpoints",
+                                       name=f"box_{cfg.box_preset}",
+                                       version=cfg.model_arch)
 
-    trainer = pl.Trainer(limit_train_batches=100,
-                         max_epochs=500,
+    trainer = pl.Trainer(limit_train_batches=cfg.limit_train_batches,
+                         max_epochs=cfg.max_epoch,
                          accelerator="gpu",
                          devices=2,
                          log_every_n_steps=10,
                          default_root_dir="saved_checkpoints",
+                         logger=logger,
                          callbacks=[early_stopper_callback, checkpoint_callback])
 
     trainer.fit(model=classifier, train_dataloaders=dl_train, val_dataloaders=dl_valid)
