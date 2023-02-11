@@ -62,8 +62,6 @@ class XrayDataset(Dataset):
                                                   take_square=False)
         img_mask[ymin:ymax, xmin:xmax] = img[ymin:ymax, xmin:xmax]
 
-        # print(xmin, ymin, xmax, ymax, img.shape, self.df.iloc[idx, 0])
-
         img_stacked = np.array([img, img_mask, img])
         xmin, ymin, xmax, ymax = self.bbox2points([x, y, w, h], H, W,
                                                   box_preset=self.box_preset,
@@ -95,23 +93,26 @@ class XrayDataset(Dataset):
                 xmax = int((x + (h / 2)) * W)
                 ymin = int((y - (h / 2)) * H)
                 ymax = int((y + (h / 2)) * H)
+                return xmin, ymin, xmax, ymax
             elif box_preset == 1:
                 xmin = 0
                 xmax = W
                 ymin = int((y - (h / 2)) * H)
                 ymax = int((y + (h / 2)) * H)
+                return xmin, ymin, xmax, ymax
             elif box_preset == 2:
                 xmin = int((x - (w / 2)) * W)
                 xmax = int((x + (w / 2)) * W)
                 ymin = int((y - (w / 2)) * H)
                 ymax = int((y + (w / 2)) * H)
+                return xmin, ymin, xmax, ymax
 
         else:
             xmin = int((x - (w / 2)) * W)
             xmax = int((x + (w / 2)) * W)
             ymin = int((y - (h / 2)) * H)
             ymax = int((y + (h / 2)) * H)
-        return xmin, ymin, xmax, ymax
+            return xmin, ymin, xmax, ymax
 
     def display_example(self, idx):
         [img, img_mask, img_stacked, img_final_masked], label, file_id = self[idx]
@@ -225,11 +226,11 @@ transfroms = torch.nn.Sequential(
     tf.Resize(512),
     tf.CenterCrop(512),
     tf.RandomRotation(degrees=5),
-    tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
+    # tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
     tf.Normalize(mean=cfg.stat_mean, std=cfg.stat_std))
 
-if __name__ == "__main__":
-    split_dataset()
+
+def test_dataset():
     ds = XrayDataset(cfg, split="valid", transform=transfroms)
     print(len(ds))
     dl = DataLoader(ds, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.num_workers, pin_memory=cfg.pin_memory)
@@ -242,7 +243,15 @@ if __name__ == "__main__":
 
         img = x * np.array(cfg.stat_std) + np.array(cfg.stat_mean)
         figure.add_subplot(4, 4, i + 1)
-        plt.imshow(np.clip(img,a_min=0, a_max=1 ), cmap=plt.cm.gray)
+        plt.imshow(np.clip(img, a_min=0, a_max=1), cmap=plt.cm.gray)
         plt.title(id)
         plt.axis('off')
     plt.show()
+
+
+if __name__ == "__main__":
+    # split_dataset()
+    ds = XrayDataset(cfg, split="valid", transform=transfroms)
+    len(ds)
+    [a, b, c, d], e, f = ds[0]
+    ds.display_example(10)
