@@ -61,6 +61,23 @@ def get_model(cfg):
         model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
         return model
 
+    elif cfg.model_arch == "efficientnet_b3":
+        model = efficientnet.efficientnet_b3(pretrained=True, progress=True)
+        in_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
+
+    elif cfg.model_arch == "efficientnet_b4":
+        model = efficientnet.efficientnet_b4(pretrained=True, progress=True)
+        in_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
+
+    elif cfg.model_arch == "efficientnet_b5":
+        model = efficientnet.efficientnet_b5(pretrained=True, progress=True)
+        in_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
+        return model
     return None
 
 
