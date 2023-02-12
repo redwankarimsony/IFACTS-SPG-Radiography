@@ -48,6 +48,7 @@ class XrayDataset(Dataset):
         annot_path = osp.join(self.annot_dir, f"{self.df.iloc[idx, 0]}.txt")
 
         df = pd.read_csv(annot_path, delimiter=" ", names=["label", "x", "y", "w", "h"], header=None)
+
         img = cv2.imread(img_path)[:, :, 0]  # , cv2.IMREAD_GRAYSCALE)
         img_mask = np.zeros_like(img)
         H, W = img.shape

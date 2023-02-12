@@ -8,76 +8,82 @@ import torch.nn as nn
 from torchsummary import summary
 from torchvision.models import densenet
 from torchvision.models import efficientnet
-from torchvision.models import resnet34, resnet50
-from torchvision.models import ResNet34_Weights, ResNet50_Weights
+from torchvision.models import resnet34, resnet50, resnet101
+from torchvision.models import ResNet34_Weights, ResNet50_Weights, ResNet101_Weights
+from torchvision.models import ViT_B_16_Weights, vit_b_16
+from torchvision.models import ViT_B_32_Weights, vit_b_32
+from torchvision.models import ViT_L_16_Weights, vit_l_16
+from torchvision.models import ViT_L_32_Weights, vit_l_32
+from torchvision.models import ViT_H_14_Weights, vit_h_14
+from torchvision.models import DenseNet121_Weights, DenseNet161_Weights, DenseNet169_Weights, DenseNet201_Weights
 
 
 def get_model(cfg):
-    if cfg.model_arch == "resnet34":
-        model = resnet34(weights=ResNet34_Weights.DEFAULT, progress=True)
-        in_features = model.fc.in_features
-        model.fc = nn.Linear(in_features, cfg.num_classes, bias=True)
+    if cfg.model_arch.startswith("resnet"):
+        if cfg.model_arch == "resnet34":
+            model = resnet34(weights=ResNet34_Weights.DEFAULT, progress=True)
+        elif cfg.model_arch == "resnet50":
+            model = resnet50(weights=ResNet50_Weights.DEFAULT, progress=True)
+        elif cfg.model_arch == "resnet101":
+            model = resnet101(weights=ResNet101_Weights.DEFAULT, progress=True)
+        else:
+            model = None
+            print(f"No ResNet model found with key {cfg.model_arch}")
+        model.fc = nn.Linear(model.fc.in_features, cfg.num_classes, bias=True)
         return model
 
-    if cfg.model_arch == "resnet50":
-        model = resnet50(weights=ResNet50_Weights.DEFAULT, progress=True)
-        in_features = model.fc.in_features
-        model.fc = nn.Linear(in_features, cfg.num_classes, bias=True)
+    elif cfg.model_arch.startswith("densenet"):
+        if cfg.model_arch == "densenet121":
+            model = densenet.densenet121(DenseNet121_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "densenet161":
+            model = densenet.densenet161(DenseNet161_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "densenet169":
+            model = densenet.densenet169(DenseNet169_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "densenet201":
+            model = densenet.densenet201(DenseNet201_Weights.IMAGENET1K_V1, progress=True)
+        else:
+            model = None
+            print(f"No DenseNet model found with key {cfg.model_arch}")
+        model.classifier = nn.Linear(model.classifier.in_features, cfg.num_classes, bias=True)
         return model
 
-    if cfg.model_arch == "densenet121":
-        model = densenet.densenet121(pretrained=True, progress=True)
-        in_features = model.classifier.in_features
-        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
+    elif cfg.model_arch.startswith("efficientnet"):
+        if cfg.model_arch == "efficientnet_b0":
+            model = efficientnet.efficientnet_b0(pretrained=True, progress=True)
+        elif cfg.model_arch == "efficientnet_b1":
+            model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
+        elif cfg.model_arch == "efficientnet_b2":
+            model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
+        elif cfg.model_arch == "efficientnet_b3":
+            model = efficientnet.efficientnet_b3(pretrained=True, progress=True)
+        elif cfg.model_arch == "efficientnet_b4":
+            model = efficientnet.efficientnet_b4(pretrained=True, progress=True)
+        elif cfg.model_arch == "efficientnet_b5":
+            model = efficientnet.efficientnet_b5(pretrained=True, progress=True)
+        else:
+            model = None
+            print(f"No EfficientNet model found with key {cfg.model_arch}")
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, cfg.num_classes, bias=True)
         return model
 
-    elif cfg.model_arch == "densenet161":
-        model = densenet.densenet161(pretrained=True, progress=True)
-        in_features = model.classifier.in_features
-        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
+    elif cfg.model_arch.startswith("vit_"):
+        if cfg.model_arch == "vit_b_16":
+            model = vit_b_16(weights=ViT_B_16_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "vit_b_32":
+            model = vit_b_32(weights=ViT_B_32_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "vit_l_16":
+            model = vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "vit_l_32":
+            model = vit_l_32(weights=ViT_L_32_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch  == "vit_h_14":
+            model = vit_h_14(weights=ViT_H_14_Weights.IMAGENET1K_V1, progress=True)
+        else:
+            model = None
+            print(f"No ResNet model found with key {cfg.model_arch}")
+        model.heads.head = nn.Linear(model.heads.head.in_features, cfg.num_classes, bias=True)
         return model
 
-    elif cfg.model_arch == "densenet169":
-        model = densenet.densenet169(pretrained=True, progress=True)
-        in_features = model.classifier.in_features
-        model.classifier = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
 
-    elif cfg.model_arch == "efficientnet_b0":
-        model = efficientnet.efficientnet_b0(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
-
-    elif cfg.model_arch == "efficientnet_b1":
-        model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
-
-    elif cfg.model_arch == "efficientnet_b2":
-        model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
-
-    elif cfg.model_arch == "efficientnet_b3":
-        model = efficientnet.efficientnet_b3(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
-
-    elif cfg.model_arch == "efficientnet_b4":
-        model = efficientnet.efficientnet_b4(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
-
-    elif cfg.model_arch == "efficientnet_b5":
-        model = efficientnet.efficientnet_b5(pretrained=True, progress=True)
-        in_features = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(in_features, cfg.num_classes, bias=True)
-        return model
     return None
 
 
