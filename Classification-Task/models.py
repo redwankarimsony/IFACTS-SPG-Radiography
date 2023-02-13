@@ -4,18 +4,29 @@
 # GitHub: www.github.com/redwankarimsony
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
 
+
+import timm
 import torch.nn as nn
-from torchsummary import summary
+from torchvision.models import DenseNet121_Weights
+from torchvision.models import DenseNet161_Weights
+from torchvision.models import DenseNet169_Weights
+from torchvision.models import DenseNet201_Weights
+from torchvision.models import ResNet101_Weights
+from torchvision.models import ResNet34_Weights
+from torchvision.models import ResNet50_Weights
+from torchvision.models import EfficientNet_B0_Weights
+from torchvision.models import EfficientNet_B1_Weights
+from torchvision.models import EfficientNet_B2_Weights
+from torchvision.models import EfficientNet_B3_Weights
+from torchvision.models import EfficientNet_B4_Weights
+from torchvision.models import EfficientNet_B5_Weights
+from torchvision.models import EfficientNet_B6_Weights
+from torchvision.models import EfficientNet_B7_Weights
 from torchvision.models import densenet
 from torchvision.models import efficientnet
-from torchvision.models import resnet34, resnet50, resnet101
-from torchvision.models import ResNet34_Weights, ResNet50_Weights, ResNet101_Weights
-from torchvision.models import ViT_B_16_Weights, vit_b_16
-from torchvision.models import ViT_B_32_Weights, vit_b_32
-from torchvision.models import ViT_L_16_Weights, vit_l_16
-from torchvision.models import ViT_L_32_Weights, vit_l_32
-from torchvision.models import ViT_H_14_Weights, vit_h_14
-from torchvision.models import DenseNet121_Weights, DenseNet161_Weights, DenseNet169_Weights, DenseNet201_Weights
+from torchvision.models import resnet101
+from torchvision.models import resnet34
+from torchvision.models import resnet50
 
 
 def get_model(cfg):
@@ -49,17 +60,21 @@ def get_model(cfg):
 
     elif cfg.model_arch.startswith("efficientnet"):
         if cfg.model_arch == "efficientnet_b0":
-            model = efficientnet.efficientnet_b0(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b0(EfficientNet_B0_Weights.IMAGENET1K_V1, progress=True)
         elif cfg.model_arch == "efficientnet_b1":
-            model = efficientnet.efficientnet_b1(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b1(EfficientNet_B1_Weights.IMAGENET1K_V1, progress=True)
         elif cfg.model_arch == "efficientnet_b2":
-            model = efficientnet.efficientnet_b2(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b2(EfficientNet_B2_Weights.IMAGENET1K_V1, progress=True)
         elif cfg.model_arch == "efficientnet_b3":
-            model = efficientnet.efficientnet_b3(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b3(EfficientNet_B3_Weights.IMAGENET1K_V1, progress=True)
         elif cfg.model_arch == "efficientnet_b4":
-            model = efficientnet.efficientnet_b4(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b4(EfficientNet_B4_Weights.IMAGENET1K_V1, progress=True)
         elif cfg.model_arch == "efficientnet_b5":
-            model = efficientnet.efficientnet_b5(pretrained=True, progress=True)
+            model = efficientnet.efficientnet_b5(EfficientNet_B5_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "efficientnet_b6":
+            model = efficientnet.efficientnet_b6(EfficientNet_B6_Weights.IMAGENET1K_V1, progress=True)
+        elif cfg.model_arch == "efficientnet_b7":
+            model = efficientnet.efficientnet_b7(EfficientNet_B7_Weights.IMAGENET1K_V1, progress=True)
         else:
             model = None
             print(f"No EfficientNet model found with key {cfg.model_arch}")
@@ -67,21 +82,14 @@ def get_model(cfg):
         return model
 
     elif cfg.model_arch.startswith("vit_"):
-        if cfg.model_arch == "vit_b_16":
-            model = vit_b_16(weights=ViT_B_16_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "vit_b_32":
-            model = vit_b_32(weights=ViT_B_32_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "vit_l_16":
-            model = vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "vit_l_32":
-            model = vit_l_32(weights=ViT_L_32_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch  == "vit_h_14":
-            model = vit_h_14(weights=ViT_H_14_Weights.IMAGENET1K_V1, progress=True)
+        if cfg.model_arch == "vit_large_r50_s32_384":
+            model = timm.create_model("vit_large_r50_s32_384", num_classes=cfg.num_classes, pretrained=True)
+            return model
+        elif cfg.model_arch_arch == "vit_large_patch32_384":
+            model = timm.create_model("vit_large_patch32_384", num_classes=cfg.num_classes, pretrained=True)
+            return model
         else:
-            model = None
-            print(f"No ResNet model found with key {cfg.model_arch}")
-        model.heads.head = nn.Linear(model.heads.head.in_features, cfg.num_classes, bias=True)
-        return model
+            print(f"NO fastai.timm model found with the key {cfg.model_arch}")
 
 
     return None
