@@ -108,7 +108,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(limit_train_batches=cfg.limit_train_batches,
                          max_epochs=cfg.max_epoch,
                          accelerator="gpu",
-                         devices=2,
+                         devices=cfg.cuda_devices,
                          log_every_n_steps=10,
                          default_root_dir="saved_checkpoints",
                          logger=logger,

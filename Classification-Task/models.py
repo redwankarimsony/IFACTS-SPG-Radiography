@@ -83,10 +83,10 @@ def get_model(cfg):
 
     elif cfg.model_arch.startswith("vit_"):
         if cfg.model_arch == "vit_large_r50_s32_384":
-            model = timm.create_model("vit_large_r50_s32_384", num_classes=cfg.num_classes, pretrained=True)
+            model = timm.create_model(cfg.model_arch, num_classes=cfg.num_classes, pretrained=True)
             return model
-        elif cfg.model_arch_arch == "vit_large_patch32_384":
-            model = timm.create_model("vit_large_patch32_384", num_classes=cfg.num_classes, pretrained=True)
+        elif cfg.model_arch == "vit_large_patch32_384":
+            model = timm.create_model(cfg.model_arch, num_classes=cfg.num_classes, pretrained=True)
             return model
         else:
             print(f"NO fastai.timm model found with the key {cfg.model_arch}")

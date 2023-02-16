@@ -12,11 +12,11 @@ class configClass:
     def __init__(self):
         self.experiment_name = 'base_experiment'
         self.results_dir = f"results/{self.experiment_name}"
-        self.img_dir = "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_2"
-        self.annot_dir = "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/Three_ROI_280_identities"
-        self.width = 512
-        self.height = 512
-        assert self.width == self.height "The height and width of the input image should be the same"
+        self.img_dir = "../Annotation/images_annotation_2"
+        self.annot_dir = "../Annotation/Three_ROI_280_identities"
+        self.width = 384
+        self.height = 384
+        assert self.width == self.height, "The height and width of the input image should be the same"
         self.limit_train_batches = 28
         self.max_epoch = 500
 
@@ -26,12 +26,13 @@ class configClass:
         # 1= (Whole Vertebral Column Only)
         # 2= (T1-T5) with Clavicle
         # 3 =(Consider Whole Xray)]
-        self.box_preset = 1
+        self.box_preset = 0
 
-        self.model_arch = "efficientnet_b3"
+        self.model_arch = "vit_large_patch32_384"
         self.num_classes = 281
         self.pin_memory = True
         self.cuda_precision = "highest"  # ["medium", "high", "highest"]
+        self.cuda_devices =[4]
 
         self.stat_mean = [0.485, 0.456, 0.406]
         self.stat_std = [0.229, 0.224, 0.225]
