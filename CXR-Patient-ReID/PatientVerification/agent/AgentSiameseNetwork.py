@@ -154,7 +154,7 @@ class AgentSiameseNetwork:
                                                             n_samples=self.n_samples_val,
                                                             transform=self.transform_val_test,
                                                             image_path=self.IMAGE_PATH, batch_size=self.batch_size,
-                                                            shuffle=False, num_workers=self.num_workers,
+                                                            shuffle=True, num_workers=self.num_workers,
                                                             pin_memory=self.pin_memory, save_path=None)
         self.test_loader = Utils.get_data_loaders(phase='testing', data_handling='balanced',
                                                   n_channels=self.n_channels, n_samples=self.n_samples_test,

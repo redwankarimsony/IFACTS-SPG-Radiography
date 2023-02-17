@@ -18,7 +18,7 @@
 	"image_size": 256,
 	"loss": "BCEWithLogitsLoss",
 	"optimizer": "Adam",
-	"learning_rate": 0.00006,
+	"learning_rate": 0.000006,
 	"batch_size": 180,
 	"max_epochs": 100,
 	"early_stopping": 5,

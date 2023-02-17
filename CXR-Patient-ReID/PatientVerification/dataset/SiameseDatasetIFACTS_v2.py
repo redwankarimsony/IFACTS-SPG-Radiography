@@ -1,12 +1,13 @@
 import os.path as osp
-from torch.utils import data
-import numpy as np
-from PIL import Image
-from itertools import combinations
 from glob import glob
+from itertools import combinations
 from random import sample
 
+import numpy as np
 import torchvision.transforms as transforms
+from PIL import Image
+from torch.utils import data
+
 from enhancement_experiments import applyCLAHE
 
 
@@ -43,13 +44,17 @@ class SiameseDatasetIFACTS(data.Dataset):
         imgFiles = []
         for filename in filenames:
             ID = filename.split("_")[0]
-            imgFiles.append(glob(osp.join(self.img_dir, ID, f"{filename}.*"))[0])
+            try:
+                imgFiles.append(glob(osp.join(self.img_dir, ID, f"{filename}.*"))[0])
+            except Exception as e:
+                print(e)
 
+                
         pairs = list(combinations(imgFiles, 2))
         for pair in pairs:
             id1 = pair[0].split("/")[-1].split("_")[0]
             id2 = pair[1].split("/")[-1].split("_")[0]
-            if (id1 == id2):
+            if id1 == id2:
                 self.pos_pairs.append([pair[0], pair[1], 1.0])
             else:
                 self.neg_pairs.append([pair[0], pair[1], 0.0])
@@ -88,7 +93,6 @@ class SiameseDatasetIFACTS(data.Dataset):
             x1 = squareCROP(x1)
             x2 = squareCROP(x2)
 
-
         # x1 = apply_CLAHE(x1)
         # x2 = apply_CLAHE(x2)
 
@@ -100,7 +104,7 @@ class SiameseDatasetIFACTS(data.Dataset):
 
         return x1, x2, y1
 
-    def save_pairs():
+    def save_pairs(self):
         pass
 
     def getLabel(self, img_path):
@@ -120,13 +124,10 @@ def squareCROP(img):
     else:
         extra_pixels = abs(H - W) // 2
         if H > W:
-            print("H>W")
-            img = img.crop((0, extra_pixels, W, H-extra_pixels))
+            img = img.crop((0, extra_pixels, W, H - extra_pixels))
         else:
-            print("H<W")
-            img = img.crop((extra_pixels, 0, W-extra_pixels, H))
+            img = img.crop((extra_pixels, 0, W - extra_pixels, H))
         return img
-
 
 
 def cropImage(img, boxYOLO):

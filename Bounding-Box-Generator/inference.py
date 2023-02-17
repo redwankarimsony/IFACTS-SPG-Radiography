@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import torchvision
+from tqdm import tqdm
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
@@ -37,9 +38,6 @@ def apply_nms(orig_prediction, iou_thresh=0.3):
     return final_prediction
 
 
-
-
-
 def main(config):
     # Load the model
     # to train on gpu if selected.
@@ -64,21 +62,18 @@ def main(config):
     model.eval()
 
     with torch.no_grad():
-        for epoch, (imgs, img_paths) in enumerate(dl_infer):
+        for epoch, (imgs, img_paths) in tqdm(enumerate(dl_infer), desc="Generating Predictions..."):
             predictions = model(imgs.to(device))
             for prediction, img_path in zip(predictions, img_paths):
-                prediction = apply_nms(prediction, iou_thresh=0.7)
+                prediction = apply_nms(prediction, iou_thresh=0.8)
                 if len(prediction["boxes"]):
-                    label_file_name = img_path.split("/")[-1].replace(".png", ".txt")
-                    with open(os.path.join(config["infer_save_dir"], label_file_name ), "w") as fp:
-                        [label, x, y, w, h] = coco_2_yolo(prediction)
-                        print(f"{label-1} {x:0.4f} {y:0.4f} {w:0.4f} {h:0.4f}", file=fp)
+                    if prediction["scores"].cpu().numpy()[0] > config["infer_threshold"]:
+                        label_file_name = img_path.split("/")[-1].replace(".png", ".txt")
+                        with open(os.path.join(config["infer_save_dir"], label_file_name), "w") as fp:
+                            [label, x, y, w, h] = coco_2_yolo(prediction)
+                            print(f"{label - 1} {x:0.4f} {y:0.4f} {w:0.4f} {h:0.4f}", file=fp)
                 else:
                     print(f"No prediction on {img_path}")
-
-
-
-
 
 
 if __name__ == "__main__":

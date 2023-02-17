@@ -1,8 +1,9 @@
-{
+{ "num_classes": 2,
   "train_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/train/",
   "test_dir": "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Bounding-Box-Generator/dummy_dataset/test",
-  "infer_dir": "/home/sonymd/Downloads/ChestXray14Data/subset/",
-  "infer_save_dir": "/home/sonymd/Downloads/ChestXray14Data/subset-labels",
+  "infer_dir": "/home/sonymd/Downloads/ChestXray14Data/small_subset/train",
+  "infer_save_dir": "/home/sonymd/Downloads/ChestXray14Data/small_subset/train",
+  "infer_threshold": 0.9,
   "width": 480,
   "height": 480,
 
@@ -11,5 +12,4 @@
   "num_workers": 16,
   "pin_memory": true,
   "cuda_device": "cuda:0"
-
 }

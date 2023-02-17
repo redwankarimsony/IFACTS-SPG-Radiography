@@ -14,11 +14,19 @@ class configClass:
         self.results_dir = f"results/{self.experiment_name}"
         self.img_dir = "../Annotation/images_annotation_2"
         self.annot_dir = "../Annotation/Three_ROI_280_identities"
+<<<<<<< Updated upstream
         self.width = 384
         self.height = 384
         assert self.width == self.height, "The height and width of the input image should be the same"
         self.limit_train_batches = 28
         self.max_epoch = 500
+=======
+        self.width = 512
+        self.height = 512
+        assert self.width == self.height, "Height and width sould always be the same"
+        self.limit_train_batches = 64
+        self.max_epoch = 1000
+>>>>>>> Stashed changes
 
         self.valid_ratio = 0.5
 
@@ -28,7 +36,11 @@ class configClass:
         # 3 =(Consider Whole Xray)]
         self.box_preset = 0
 
+<<<<<<< Updated upstream
         self.model_arch = "vit_large_patch32_384"
+=======
+        self.model_arch = "efficientnet_b5"
+>>>>>>> Stashed changes
         self.num_classes = 281
         self.pin_memory = True
         self.cuda_precision = "highest"  # ["medium", "high", "highest"]
@@ -37,9 +49,13 @@ class configClass:
         self.stat_mean = [0.485, 0.456, 0.406]
         self.stat_std = [0.229, 0.224, 0.225]
 
-        self.batch_size = 16
+        self.batch_size = 8
         self.num_workers = min(self.batch_size, int(os.cpu_count() * 0.8))
-        self.learning_rate = 1e-4
+        self.learning_rate = (1e-4)/2
+
+        if self.model_arch.startswith("vit_"):
+            self.width = 224
+            self.height = 224
 
         self.tfms_train = Sequential(tf.Resize(self.width),
                                      tf.CenterCrop(self.width),
