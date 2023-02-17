@@ -51,6 +51,8 @@ class XrayDataset(Dataset):
         img = cv2.imread(img_path)[:, :, 0]  # , cv2.IMREAD_GRAYSCALE)
         img_mask = np.zeros_like(img)
         H, W = img.shape
+        # print(img_path)
+
 
         if cfg.box_preset != 3:
             _, x, y, w, h = df.iloc[cfg.box_preset, :]
@@ -60,14 +62,16 @@ class XrayDataset(Dataset):
         xmin, ymin, xmax, ymax = self.bbox2points([x, y, w, h], H, W,
                                                   box_preset=self.box_preset,
                                                   take_square=False)
-        img_mask[ymin:ymax, xmin:xmax] = img[ymin:ymax, xmin:xmax]
 
+        img_mask[ymin:ymax, xmin:xmax] = img[ymin:ymax, xmin:xmax]
+        # print("img_mask.shape: ", img_mask.shape)
         img_stacked = np.array([img, img_mask, img])
         xmin, ymin, xmax, ymax = self.bbox2points([x, y, w, h], H, W,
                                                   box_preset=self.box_preset,
                                                   take_square=True)
+        # print("take square shape:", xmin, ymin, xmax, ymax)
         img_final_masked = img_stacked[:, ymin:ymax, xmin:xmax]
-
+        
         img_tensor = torch.tensor(img_final_masked) / 255.
         # print(img_tensor.shape)
         if self.transform:
@@ -101,10 +105,10 @@ class XrayDataset(Dataset):
                 ymax = int((y + (h / 2)) * H)
                 return xmin, ymin, xmax, ymax
             elif box_preset == 2:
-                xmin = int((x - (w / 2)) * W)
-                xmax = int((x + (w / 2)) * W)
-                ymin = int((y - (w / 2)) * H)
-                ymax = int((y + (w / 2)) * H)
+                xmin = max(int((x - (w / 2)) * W), 0)
+                xmax = min(int((x + (w / 2)) * W), W)
+                ymin = max(int((y - (w / 2)) * H), 0)
+                ymax = min(int((y + (w / 2)) * H), H)
                 return xmin, ymin, xmax, ymax
 
         else:
@@ -148,7 +152,8 @@ class XrayDataset(Dataset):
         plt.title("Stacked and Cropped")
 
         fig.suptitle(f"Comparison of Different Channels\n{file_id}")
-        plt.show()
+        # plt.show()
+        plt.savefig("output.png", dpi=200)
 
 
 def split_dataset(annot_dir=cfg.annot_dir):
@@ -251,7 +256,10 @@ def test_dataset():
 
 if __name__ == "__main__":
     # split_dataset()
-    ds = XrayDataset(cfg, split="valid", transform=transfroms)
+    ds = XrayDataset(cfg, split="train", transform=transfroms)
     len(ds)
-    [a, b, c, d], e, f = ds[0]
-    ds.display_example(10)
+    for i in range(len(ds)):
+        # [a, b, c, d], e, f = ds[0]
+        a, b, c = ds[i]
+        # print(a.shape, b)
+    # ds.display_example(10)
