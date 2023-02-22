@@ -1,7 +1,7 @@
-from torch.utils import data
 import numpy as np
-from PIL import Image
 import torchvision.transforms as transforms
+from PIL import Image
+from torch.utils import data
 
 
 class SiameseDatasetIFACTS(data.Dataset):
@@ -9,8 +9,9 @@ class SiameseDatasetIFACTS(data.Dataset):
     This is the data loader for the old training examples. Where the whole xray image is taken. 
     For genuine pair, label is 1 and for imposter image, label is 0
     """
-    def __init__(self, phase='testing', n_channels=3, n_samples=32131, transform=None, 
-                image_path='/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/',
+
+    def __init__(self, phase='testing', n_channels=3, n_samples=32131, transform=None,
+                 image_path='/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/',
                  save_path=None):
 
         self.phase = phase
@@ -32,7 +33,6 @@ class SiameseDatasetIFACTS(data.Dataset):
 
     def __len__(self):
         return len(self.image_pairs)
-
 
     def __getitem__(self, index):
 
@@ -59,6 +59,7 @@ def pil_loader(path, n_channels):
         else:
             raise ValueError('Invalid value for parameter n_channels!')
 
+
 image_size = 256
 transform = transforms.Compose([
     transforms.Resize((image_size, image_size)),
@@ -66,11 +67,10 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-
-
 if __name__ == "__main__":
-    ds = SiameseDatasetIFACTS(image_path='/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/',
-                                transform=transform)
+    ds = SiameseDatasetIFACTS(
+        image_path='/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/images_annotation_1/',
+        transform=transform)
     print(len(ds))
     a, b, c = ds[0]
     print(a.shape, b.shape, c)

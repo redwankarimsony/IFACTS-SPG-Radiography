@@ -1,43 +1,56 @@
-import os, glob
-from itertools import combinations
-
+import os
+import glob
 from torch.utils.data import Dataset, DataLoader
+import cv2
+
+from torchvision.transforms import Compose, ToTensor, Normalize, Resize
 
 
+class TripletXRay(Dataset):
+    def __init__(self, data_dir, annot_dir, width, height, num_triplets=10000, split="train", transforms=None):
+        super().__init__()
 
-class MatchingDataset(Dataset):
-    def __init__(self, dataRoot:str = '../partial-match-data' , train:bool=False) -> None:
-        super(MatchingDataset, self).__init__()
-        all_pairs = glob.glob(f"{dataRoot}/*/*.jpg")
-        all_combs = combinations(all_pairs, 2)        
-        self.img_paths = []
-        for pair in all_combs:
-            if self.pair_validation(pair):
-                self.img_paths.append(pair)
+        self.data_dir = data_dir
+        self.annot_dir = annot_dir
+        self.width = width
+        self.height = height
+        self.num_triplets = num_triplets
+        self.split = split
+        self.transforms = transforms
+        self.all_images = glob.glob(f"{self.data_dir}/{self.split}/*_*.png")
+        self.IDs_imgs = {}
 
-        # print(self.img_paths)
+        self.IDs = list(set([x.split("/")[-1].split("_")[0] for x in self.all_images]))
 
-    def pair_validation(self, pair):
-        first, second = pair[0].split(os.path.sep)[-1], pair[1].split(os.path.sep)[-1]
-        orientFirst, orientSecond = first[13:15], second[13:15]
-        return orientFirst==orientSecond
+        for ID in self.IDs:
+            self.IDs_imgs[ID] = []
+        for img_path in self.all_images:
+            self.IDs_imgs[img_path.split("/")[-1].split("_")[0]].append(img_path)
 
     def __len__(self):
-        return len(self.img_paths)
+        return self.num_triplets
 
-    def getLabel(self, pair):
-        first, second = pair[0].split(os.path.sep)[-1], pair[1].split(os.path.sep)[-1]
-        return (first.split("_")[0] == second.split("_")[0])*1
-
-    def __getitem__(self, idx) :
-        return self.img_paths[idx], self.getLabel(self.img_paths[idx])
+    def __getitem__(self, idx):
+        pass
 
 
+tfms = Compose([ToTensor(),
+                Resize(224, 224),
+                Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
+if __name__ == "__main__":
+    ds = TripletXRay(data_dir="/home/sonymd/Downloads/ChestXray14Data/small_subset",
+                     annot_dir="/home/sonymd/Downloads/ChestXray14Data/small_subset",
+                     width=224,
+                     height=224,
+                     transforms=tfms)
+    print(len(ds), ds.IDs_imgs)
 
+    print(len(ds.all_images))
+    total = 0
 
-if __name__ == '__main__':
-    ds = MatchingDataset()
-
-    for i in range(len(ds)):
-        print(ds[i])
+    for ID in ds.IDs:
+        members = len(ds.IDs_imgs[ID])
+        if members == 1:
+            del ds.IDs_imgs[ID]
+    print(ds.IDs_imgs)

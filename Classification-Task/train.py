@@ -41,8 +41,8 @@ class LightningTrainer(pl.LightningModule):
         batch_size = len(X)
         # logging the results
         self.train_acc(preds, y)
-        self.log("train_loss", loss, batch_size=batch_size, logger=True)
-        self.log("train_acc_step", self.train_acc, batch_size=batch_size)
+        self.log("train_loss", loss, batch_size=batch_size, logger=True, sync_dist=True)
+        self.log("train_acc_step", self.train_acc, batch_size=batch_size, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -55,8 +55,8 @@ class LightningTrainer(pl.LightningModule):
 
         # logging the results
         self.val_acc(preds, y)
-        self.log("val_loss", loss, batch_size=batch_size, logger=True)
-        self.log("val_acc_step", self.val_acc, batch_size=batch_size)
+        self.log("val_loss", loss, batch_size=batch_size, logger=True, sync_dist=True)
+        self.log("val_acc_step", self.val_acc, batch_size=batch_size, sync_dist=True)
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.model.parameters(), lr=self.cfg.learning_rate)
