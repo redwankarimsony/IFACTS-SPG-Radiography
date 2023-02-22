@@ -36,13 +36,13 @@ def inference(cfg, best_model_checkpoint):
 
     predictions = []
     gt = []
-    ml_model = model.model.to(f"cuda:6")
+    ml_model = model.model.to(f"cuda:1")
     ml_model.eval()
     with torch.no_grad():
         for idx, batch in enumerate(dl_valid):
             X, y, codes = batch
             print(y.shape)
-            y_hat = ml_model(X.to("cuda:6"))
+            y_hat = ml_model(X.to("cuda:1"))
             preds = model.softmax(y_hat)
             predictions.append(preds.cpu())
             gt.extend(y.tolist())
