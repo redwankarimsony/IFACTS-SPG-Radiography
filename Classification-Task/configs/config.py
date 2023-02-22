@@ -3,6 +3,8 @@
 # Mail: sonymd@msu.edu
 # GitHub: www.github.com/redwankarimsony
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
+
+
 import os
 import torchvision.transforms as tf
 from torch.nn import Sequential
@@ -14,25 +16,26 @@ class configClass:
         self.results_dir = f"results/{self.experiment_name}"
         self.img_dir = "../Annotation/images_annotation_2"
         self.annot_dir = "../Annotation/Three_ROI_280_identities"
-        self.width = 384
-        self.height = 384
+        self.width = 512
+        self.height = 512
         assert self.width == self.height, "The height and width of the input image should be the same"
         self.limit_train_batches = 28
         self.max_epoch = 500
 
         self.valid_ratio = 0.5
 
-        # [0=(T1-T5 segment only),
-        # 1= (Whole Vertebral Column Only)
-        # 2= (T1-T5) with Clavicle
-        # 3 =(Consider Whole Xray)]
-        self.box_preset = 0
+        #   0=(T1-T5 segment only),
+        #   1= (Whole Vertebral Column Only)
+        #   2= (T1-T5) with Clavicle
+        #   3 =(Consider Whole Xray)
+        self.box_preset = 2
 
-        self.model_arch = "vit_large_patch32_384"
+        self.model_arch = "swin_b"
+        self.cuda_devices = [3]
+
         self.num_classes = 281
         self.pin_memory = True
-        self.cuda_precision = "highest"  # ["medium", "high", "highest"]
-        self.cuda_devices =[4]
+        self.cuda_precision = "high"  # ["medium", "high", "highest"]
 
         self.stat_mean = [0.485, 0.456, 0.406]
         self.stat_std = [0.229, 0.224, 0.225]
@@ -53,8 +56,6 @@ class configClass:
                                      # tf.RandomRotation(degrees=5),
                                      # tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
                                      tf.Normalize(mean=self.stat_mean, std=self.stat_std))
-
-        self.make_results_dir()
 
     def make_results_dir(self):
         try:
