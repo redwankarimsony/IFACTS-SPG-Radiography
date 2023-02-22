@@ -10,6 +10,8 @@ import os
 import os.path as osp
 
 import cv2
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -58,7 +60,7 @@ class XrayDataset(Dataset):
             _, x, y, w, h = df.iloc[cfg.box_preset, :]
         else:
             _, x, y, w, h = 4, 0.5, 0.5, 1, 1
-
+        # print([x, y, w, h])
         xmin, ymin, xmax, ymax = self.bbox2points([x, y, w, h], H, W,
                                                   box_preset=self.box_preset,
                                                   take_square=False)
@@ -104,12 +106,13 @@ class XrayDataset(Dataset):
                 ymin = int((y - (h / 2)) * H)
                 ymax = int((y + (h / 2)) * H)
                 return xmin, ymin, xmax, ymax
-            elif box_preset == 2:
+            elif box_preset == 2 or box_preset == 3:
                 xmin = max(int((x - (w / 2)) * W), 0)
                 xmax = min(int((x + (w / 2)) * W), W)
                 ymin = max(int((y - (w / 2)) * H), 0)
                 ymax = min(int((y + (w / 2)) * H), H)
                 return xmin, ymin, xmax, ymax
+
 
         else:
             xmin = int((x - (w / 2)) * W)
@@ -126,34 +129,48 @@ class XrayDataset(Dataset):
         print((img + img_mask) // 2)
 
         fig = plt.figure(figsize=(15, 15), dpi=100)
-        fig.add_subplot(2, 3, 1)
+        fig.add_subplot(3, 3, 1)
 
         plt.imshow(img, cmap=plt.cm.gray)
         plt.title("Original Image")
 
-        fig.add_subplot(2, 3, 2)
+        fig.add_subplot(3, 3, 2)
         plt.imshow(img_mask, cmap=plt.cm.gray)
         plt.title("Masked Image")
 
-        fig.add_subplot(2, 3, 3)
+        fig.add_subplot(3, 3, 3)
         plt.imshow((img + img_mask) // 2, cmap=plt.cm.gray)
         plt.title("Average Channel")
 
-        fig.add_subplot(2, 3, 4)
+        fig.add_subplot(3, 3, 4)
         plt.imshow(np.maximum(img, img_mask), cmap=plt.cm.gray)
         plt.title("Reconstruction")
 
-        fig.add_subplot(2, 3, 5)
+        fig.add_subplot(3, 3, 5)
         plt.imshow(np.moveaxis(img_stacked, 0, 2), cmap=plt.cm.gray)
         plt.title("Stacked")
 
-        fig.add_subplot(2, 3, 6)
-        plt.imshow(np.moveaxis(img_final_masked.numpy(), 0, 2), cmap=plt.cm.gray)
+
+        fig.add_subplot(3, 3, 6)
+        output = np.moveaxis(img_final_masked.numpy(), 0, 2)
+        plt.imshow(output)
         plt.title("Stacked and Cropped")
+
+        fig.add_subplot(3, 3, 7)
+        plt.imshow(output[:, :, 0], cmap=plt.cm.bone)
+        plt.title("Input Channel: 0")
+
+        fig.add_subplot(3, 3, 8)
+        plt.imshow(output[:, :, 1], cmap=plt.cm.bone)
+        plt.title("Input Channel: 1")
+
+        fig.add_subplot(3, 3, 9)
+        plt.imshow(output[:, :, 2], cmap=plt.cm.bone)
+        plt.title("Input Channel: 2")
 
         fig.suptitle(f"Comparison of Different Channels\n{file_id}")
         # plt.show()
-        plt.savefig("output.png", dpi=200)
+        plt.savefig(f"output_box_{self.box_preset}.png", dpi=200)
 
 
 def split_dataset(annot_dir=cfg.annot_dir):
@@ -230,7 +247,7 @@ def split_dataset(annot_dir=cfg.annot_dir):
 transfroms = torch.nn.Sequential(
     tf.Resize(512),
     tf.CenterCrop(512),
-    tf.RandomRotation(degrees=5),
+    # tf.RandomRotation(degrees=5),
     # tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
     tf.Normalize(mean=cfg.stat_mean, std=cfg.stat_std))
 
@@ -258,8 +275,8 @@ if __name__ == "__main__":
     # split_dataset()
     ds = XrayDataset(cfg, split="train", transform=transfroms)
     len(ds)
-    for i in range(len(ds)):
-        # [a, b, c, d], e, f = ds[0]
-        a, b, c = ds[i]
-        # print(a.shape, b)
-    # ds.display_example(10)
+    # for i in range(len(ds)):
+    #     # [a, b, c, d], e, f = ds[0]
+    #     a, b, c = ds[i]
+    #     print(a.shape, b)
+    ds.display_example(10)
