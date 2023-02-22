@@ -3,6 +3,7 @@
 # Mail: sonymd@msu.edu
 # GitHub: www.github.com/redwankarimsony
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
+import argparse
 import torch
 import pytorch_lightning as pl
 import torchmetrics
@@ -12,11 +13,11 @@ from torch.utils.data import DataLoader
 from pytorch_lightning import loggers
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
-from configs.config import cfg
+from configs.config import configClass
 from dataset import XrayDataset
 from models import get_model
 
-torch.set_float32_matmul_precision(cfg.cuda_precision)
+torch.set_float32_matmul_precision("high")
 
 
 class LightningTrainer(pl.LightningModule):
@@ -26,7 +27,7 @@ class LightningTrainer(pl.LightningModule):
         self.model = get_model(self.cfg)
         self.loss_func = nn.CrossEntropyLoss()
 
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=1)
 
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=self.cfg.num_classes)
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=self.cfg.num_classes)
@@ -57,7 +58,6 @@ class LightningTrainer(pl.LightningModule):
         self.log("val_loss", loss, batch_size=batch_size, logger=True, sync_dist=True)
         self.log("val_acc_step", self.val_acc, batch_size=batch_size, sync_dist=True)
 
-
     def configure_optimizers(self):
         optimizer = optim.Adam(self.model.parameters(), lr=self.cfg.learning_rate)
         return optimizer
@@ -70,6 +70,24 @@ class LightningTrainer(pl.LightningModule):
 
 
 if __name__ == "__main__":
+    """ To run this script:
+        python train.py --model_name resnet34 --gpu 7 --box_preset 3
+    """
+    parser = argparse.ArgumentParser(prog='IFACTS Experiment',
+                                     description='What the program does',
+                                     epilog='Text at the bottom of help')
+    parser.add_argument("--model_name", type=str, default="resnet34",
+                        help="Select the model selection key.\nFor more look for cfr.model_arch in models.py file")
+    parser.add_argument("--gpu", type=int, default=7, help="Select which gpu you would like to use")
+    parser.add_argument("--box_preset", type=int, default=3, choices={0, 1, 2, 3},
+                        help="Select the bounding box configuration")
+    args = parser.parse_args()
+    cfg = configClass()
+    cfg.model_arch = args.model_name
+    cfg.cuda_devices = [args.gpu, ]
+    cfg.box_preset = args.box_preset
+    cfg.make_results_dir()
+
     # split_dataset()
     ds_train = XrayDataset(cfg, split="train", transform=cfg.tfms_train)
     ds_valid = XrayDataset(cfg, split="valid", transform=cfg.tfms_valid)
