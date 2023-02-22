@@ -1,3 +1,10 @@
+# config/config.py
+# Created by sonymd at 2/22/23
+# Mail: sonymd@msu.edu
+# GitHub: www.github.com/redwankarimsony
+# Graduate Researcher, iPRoBe Lab, CSE, MSU
+
+
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
 import torchvision.transforms as tf
