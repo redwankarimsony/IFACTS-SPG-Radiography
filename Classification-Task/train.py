@@ -113,7 +113,7 @@ if __name__ == "__main__":
                                            verbose=False,
                                            mode="min")
 
-    checkpoint_callback = ModelCheckpoint(save_top_k=10,
+    checkpoint_callback = ModelCheckpoint(save_top_k=3,
                                           monitor="val_acc_epoch",
                                           mode="max",
                                           dirpath=f"saved_checkpoints/box_{cfg.box_preset}/{cfg.model_arch}",

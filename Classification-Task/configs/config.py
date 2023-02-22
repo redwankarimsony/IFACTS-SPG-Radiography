@@ -30,7 +30,7 @@ class configClass:
         #   3 =(Consider Whole Xray)
         self.box_preset = 2
 
-        self.model_arch = "swin_b"
+        self.model_arch = "resnet34"
         self.cuda_devices = [3]
 
         self.num_classes = 281
@@ -53,8 +53,6 @@ class configClass:
 
         self.tfms_valid = Sequential(tf.Resize(self.width),
                                      tf.CenterCrop(self.width),
-                                     # tf.RandomRotation(degrees=5),
-                                     # tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
                                      tf.Normalize(mean=self.stat_mean, std=self.stat_std))
 
     def make_results_dir(self):
