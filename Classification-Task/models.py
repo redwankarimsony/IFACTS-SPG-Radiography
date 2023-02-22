@@ -22,11 +22,13 @@ from torchvision.models import EfficientNet_B4_Weights
 from torchvision.models import EfficientNet_B5_Weights
 from torchvision.models import EfficientNet_B6_Weights
 from torchvision.models import EfficientNet_B7_Weights
+from torchvision.models import Swin_T_Weights, Swin_S_Weights, Swin_B_Weights
 from torchvision.models import densenet
 from torchvision.models import efficientnet
 from torchvision.models import resnet101
 from torchvision.models import resnet34
 from torchvision.models import resnet50
+from torchvision.models import swin_t, swin_s, swin_b
 
 
 def get_model(cfg):
@@ -90,6 +92,26 @@ def get_model(cfg):
             return model
         else:
             print(f"NO fastai.timm model found with the key {cfg.model_arch}")
+
+    elif cfg.model_arch.startswith("swin"):
+        if cfg.model_arch == "swin_t":
+            model = swin_t(weights = Swin_T_Weights.DEFAULT, progress =True)
+            model.head = nn.Linear(model.head.in_features, cfg.num_classes)
+            return model
+        elif cfg.model_arch == "swin_s":
+            model = swin_s(weights = Swin_S_Weights.DEFAULT, progress =True)
+            model.head = nn.Linear(model.head.in_features, cfg.num_classes)
+            return model
+        elif cfg.model_arch == "swin_b":
+            model = swin_b(weights = Swin_B_Weights.DEFAULT, progress =True)
+            model.head = nn.Linear(model.head.in_features, cfg.num_classes)
+            return model
+        else:
+            print(f"NO Swin Transformer model found with the key {cfg.model_arch}")
+
+
+
+
 
 
     return None
