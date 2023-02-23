@@ -14,13 +14,14 @@ class configClass:
     def __init__(self):
         self.experiment_name = 'base_experiment'
         self.results_dir = f"results/{self.experiment_name}"
+        self.checkpoints_dir = "saved_checkpoints2"
         self.img_dir = "../Annotation/images_annotation_2"
         self.annot_dir = "../Annotation/Three_ROI_280_identities"
         self.width = 512
         self.height = 512
         assert self.width == self.height, "The height and width of the input image should be the same"
         self.limit_train_batches = 28
-        self.max_epoch = 500
+        self.max_epoch = 800
 
         self.valid_ratio = 0.5
 
@@ -58,6 +59,7 @@ class configClass:
     def make_results_dir(self):
         try:
             os.makedirs(self.results_dir, exist_ok=True)
+            os.makedirs(self.checkpoints_dir, exist_ok=True)
         except Exception as e:
             print(e)
 
