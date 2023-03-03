@@ -4,28 +4,24 @@
 #       GitHub: www.github.com/redwankarimsony
 #       Graduate Researcher, iPRoBe Lab, CSE, MSU
 
+import argparse
 import os
 import shutil
-import argparse
-import torch
-import pytorch_lightning as pl
-from torchmetrics import ConfusionMatrix
+from glob import glob
+
+import matplotlib
 import numpy as np
-import pandas as pd
+import torch
+from sklearn.metrics import confusion_matrix, accuracy_score, balanced_accuracy_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from configs.config import configClass
 from dataset import XrayDataset
 from train import LightningTrainer
-from configs.config import configClass
-from sklearn.metrics import confusion_matrix, accuracy_score, balanced_accuracy_score, f1_score
-from glob import glob
-import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
-
-from configs.config import cfg
-
 
 
 def inference(cfg, best_model_checkpoint):
@@ -45,7 +41,7 @@ def inference(cfg, best_model_checkpoint):
     ml_model = model.model.to(f"cuda:{cfg.cuda_devices[0]}")
     ml_model.eval()
     with torch.no_grad():
-        for idx, batch in tqdm(enumerate(dl_valid), total = len(dl_valid), desc="Generating Predictions.."):
+        for idx, batch in tqdm(enumerate(dl_valid), total=len(dl_valid), desc="Generating Predictions.."):
             X, y, codes = batch
             # print(y.shape)
             y_hat = ml_model(X.to(f"cuda:{cfg.cuda_devices[0]}"))
@@ -55,10 +51,9 @@ def inference(cfg, best_model_checkpoint):
             code_names.extend(codes)
         all_results = torch.vstack(predictions)
         final_predict = torch.argmax(all_results, axis=1).tolist()
-        
 
         cm = confusion_matrix(gt, final_predict)
-        cm_norm= cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
         acc = accuracy_score(gt, final_predict)
         acc_bal = balanced_accuracy_score(gt, final_predict)
@@ -69,17 +64,18 @@ def inference(cfg, best_model_checkpoint):
         plt.ylabel("True Label")
         plt.title(f"Model: {cfg.model_arch} Box:{cfg.box_preset} Acc:{acc:0.4f}")
         saving_path = f"{model_dir}/{cfg.model_arch}_{cfg.box_preset}_acc_{acc:0.4f}.png"
-        plt.savefig(saving_path, dpi= 400)
+        plt.savefig(saving_path, dpi=400)
         print("Confusion Matrix Saved To: ", saving_path)
-
 
         with open("results/base_experiment/labels_mapping.csv", "r") as fp:
             first = True
             mappings = []
             lines = fp.readlines()
             for line in lines:
-                if first: first=False
-                else: mappings.append(line.split(",")[0])
+                if first:
+                    first = False
+                else:
+                    mappings.append(line.split(",")[0])
 
         os.makedirs(os.path.join(model_dir, "misclassified_samples"), exist_ok=True)
         os.makedirs(os.path.join(model_dir, "correctly_classified_samples"), exist_ok=True)
@@ -92,30 +88,21 @@ def inference(cfg, best_model_checkpoint):
                     original_name = f"{code}.png"
                     new_name = f"{code} misclassified as {mappings[y_pred]}.png"
 
-                    shutil.copy(os.path.join(cfg.img_dir, original_name), 
+                    shutil.copy(os.path.join(cfg.img_dir, original_name),
                                 os.path.join(os.path.join(model_dir, "misclassified_samples"), new_name))
                 else:
                     original_name = f"{code}.png"
                     new_name = f"{code} classified as {mappings[y_pred]}.png"
 
-                    shutil.copy(os.path.join(cfg.img_dir, original_name), 
+                    shutil.copy(os.path.join(cfg.img_dir, original_name),
                                 os.path.join(os.path.join(model_dir, "correctly_classified_samples"), new_name))
-
-        
-        
-        
-
-
-
-
-
 
 
 def select_the_best_model(save_dir, model_arch, box_preset):
     query = f"{save_dir}/box_{box_preset}/{model_arch}/*.ckpt"
     res = glob(query)
     if len(res):
-        accs  = [(x.split(".")[-2]) for x in res]
+        accs = [(x.split(".")[-2]) for x in res]
         print(accs)
         max_idx = np.argmax([int(acc) for acc in accs])
 
@@ -124,10 +111,6 @@ def select_the_best_model(save_dir, model_arch, box_preset):
     else:
         print("ERROR: No model found with the given parameters")
         return None
-
-
-
-
 
 
 if __name__ == "__main__":
@@ -140,7 +123,8 @@ if __name__ == "__main__":
                                      epilog='Text at the bottom of help')
     parser.add_argument("--model_arch", type=str, default="resnet34",
                         help="Select the model selection key.\nFor more look for cfr.model_arch in models.py file")
-    parser.add_argument("--gpu", type=int, default=7, choices={0, 1, 2, 3, 4, 5, 6, 7}, help="Select which gpu you would like to use")
+    parser.add_argument("--gpu", type=int, default=7, choices={0, 1, 2, 3, 4, 5, 6, 7},
+                        help="Select which gpu you would like to use")
     parser.add_argument("--box_preset", type=int, default=3, choices={0, 1, 2, 3},
                         help="Select the bounding box configuration")
     args = parser.parse_args()
@@ -149,13 +133,8 @@ if __name__ == "__main__":
     cfg.cuda_devices = [args.gpu, ]
     cfg.box_preset = args.box_preset
 
-
-
     # Getting the best checkpoint for the configuration
-    best_model = select_the_best_model(cfg.checkpoints_dir , cfg.model_arch, cfg.box_preset)
+    best_model = select_the_best_model(cfg.checkpoints_dir, cfg.model_arch, cfg.box_preset)
     print(type(best_model))
     if best_model is not None:
         inference(cfg=cfg, best_model_checkpoint=best_model)
-
-
-

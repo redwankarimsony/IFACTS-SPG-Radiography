@@ -68,6 +68,7 @@ class XrayDataset(Dataset):
         img_mask[ymin:ymax, xmin:xmax] = img[ymin:ymax, xmin:xmax]
         # print("img_mask.shape: ", img_mask.shape)
         img_stacked = np.array([img, img_mask, img])
+        # img_stacked = np.array([img, img, img])
         xmin, ymin, xmax, ymax = self.bbox2points([x, y, w, h], H, W,
                                                   box_preset=self.box_preset,
                                                   take_square=True)
@@ -149,7 +150,6 @@ class XrayDataset(Dataset):
         fig.add_subplot(3, 3, 5)
         plt.imshow(np.moveaxis(img_stacked, 0, 2), cmap=plt.cm.gray)
         plt.title("Stacked")
-
 
         fig.add_subplot(3, 3, 6)
         output = np.moveaxis(img_final_masked.numpy(), 0, 2)

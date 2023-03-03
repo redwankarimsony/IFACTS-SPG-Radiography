@@ -78,10 +78,12 @@ if __name__ == "__main__":
                                      epilog='Text at the bottom of help')
     parser.add_argument("--model_arch", type=str, default="resnet34",
                         help="Select the model selection key.\nFor more look for cfr.model_arch in models.py file")
-    parser.add_argument("--gpu", type=int, default=7, help="Select which gpu you would like to use")
+    parser.add_argument("--gpu", type=int, default=7,
+                        help="Select which gpu you would like to use")
     parser.add_argument("--box_preset", type=int, default=3, choices={0, 1, 2, 3},
                         help="Select the bounding box configuration")
     args = parser.parse_args()
+
     cfg = configClass()
     cfg.model_arch = args.model_arch
     cfg.cuda_devices = [args.gpu, ]
@@ -109,7 +111,7 @@ if __name__ == "__main__":
 
     early_stopper_callback = EarlyStopping(monitor="val_loss",
                                            min_delta=0.00,
-                                           patience=20,
+                                           patience=30,
                                            verbose=False,
                                            mode="min")
 

@@ -14,7 +14,7 @@ class configClass:
     def __init__(self):
         self.experiment_name = 'base_experiment'
         self.results_dir = f"results/{self.experiment_name}"
-        self.checkpoints_dir = "saved_checkpoints2"
+        self.checkpoints_dir = "saved_img_img_img"
         self.img_dir = "../Annotation/images_annotation_2"
         self.annot_dir = "../Annotation/Three_ROI_280_identities"
         self.width = 512
@@ -48,8 +48,10 @@ class configClass:
         self.tfms_train = Sequential(tf.Resize(self.width),
                                      tf.CenterCrop(self.width),
                                      tf.RandomRotation(degrees=8),
+                                     # tf.RandomEqualize(p=0.3), #new
                                      tf.RandomPerspective(distortion_scale=0.2, p=0.3),
-                                     tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.6),
+                                     tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
+                                     # tf.ColorJitter(brightness=.5, hue=.3), # new
                                      tf.Normalize(mean=self.stat_mean, std=self.stat_std))
 
         self.tfms_valid = Sequential(tf.Resize(self.width),
