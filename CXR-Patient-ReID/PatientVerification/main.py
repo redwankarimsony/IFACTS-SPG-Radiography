@@ -7,7 +7,7 @@ from agent.AgentSiameseNetwork import AgentSiameseNetwork
 # define an argument parser
 parser = argparse.ArgumentParser('Patient Verification')
 parser.add_argument('--config_path', default='./config_files/', help='the path where the config files are stored')
-parser.add_argument('--config', default='config-t1-t5-150-ids-CLAHE.json', help='the hyper-parameter configuration and experiment settings')
+parser.add_argument('--config', default='config.json', help='the hyper-parameter configuration and experiment settings')
 args = parser.parse_args()
 print('Arguments:\n' + '--config_path: ' + args.config_path + '\n--config: ' + args.config)
 

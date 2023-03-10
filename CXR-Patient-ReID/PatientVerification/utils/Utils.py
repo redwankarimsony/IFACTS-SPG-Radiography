@@ -7,8 +7,8 @@ import itertools
 import numpy as np
 from dataset.SiameseDataset import SiameseDataset
 from dataset.SiameseDatasetIFACTS_v2 import SiameseDatasetIFACTS
+from dataset.SiameseDatasetChextXray14 import SiameseDatasetChextXray14
 import matplotlib.pyplot as plt
-
 
 """
 This file provides the most important functions that are used in our experiments. These functions are called in 
@@ -23,12 +23,11 @@ def get_data_loaders(phase='training', data_handling='balanced', n_channels=3, n
     # dataset = SiameseDataset(phase=phase, data_handling=data_handling, n_channels=n_channels, n_samples=n_samples,
     #                          transform=transform, image_path=image_path, save_path=save_path)
 
-
-    dataset = SiameseDatasetIFACTS(img_dir="/home/sonymd/Downloads/Chest Radiograph Files/Chest_Radiograph", 
-                                    annot_dir = "/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/annotation_T1-T5",
-                                    phase=phase,
-                                    data_handling=data_handling,
-                                    transform=transform)
+    dataset = SiameseDatasetIFACTS(img_dir= "/home/sonymd/Downloads/Chest Radiograph Files/Chest_Radiograph",
+                                        annot_dir="/home/sonymd/Desktop/IFACTS/IFACTS-SPG-Radiography/Annotation/Annotations_T1-T5_280_identities",
+                                        phase=phase,
+                                        data_handling=data_handling,
+                                        transform=transform)
 
     dataloader = data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers,
                                  pin_memory=pin_memory)
@@ -77,7 +76,8 @@ def validate(net, validation_loader, n_samples, batch_size, criterion, epoch, n_
     with torch.no_grad():
         for i, batch in enumerate(validation_loader):
             inputs1, inputs2, labels = batch
-            inputs1, inputs2, labels = inputs1.cuda(device=device), inputs2.cuda(device=device), labels.cuda(device=device)
+            inputs1, inputs2, labels = inputs1.cuda(device=device), inputs2.cuda(device=device), labels.cuda(
+                device=device)
 
             # forward
             outputs = net(inputs1, inputs2)
@@ -113,7 +113,8 @@ def test(net, test_loader, device):
             else:
                 y_true = torch.cat((y_true, labels), 0)
 
-            inputs1, inputs2, labels = inputs1.cuda(device=device), inputs2.cuda(device=device), labels.cuda(device=device)
+            inputs1, inputs2, labels = inputs1.cuda(device=device), inputs2.cuda(device=device), labels.cuda(
+                device=device)
             outputs = net(inputs1, inputs2)
             outputs = torch.sigmoid(outputs)
 
