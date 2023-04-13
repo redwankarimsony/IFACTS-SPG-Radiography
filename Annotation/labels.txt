@@ -1,1 +1,3 @@
-annotation
+T1-T5
+Clavicle
+Complete Vertebrae
