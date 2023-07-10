@@ -12,5 +12,5 @@
   This includes.txt files coding a rectangle bounding box around the bodies of the 1st thoracic (T1) through 5th thoracic vertebrae (T5). The bounding box runs from the top of the T1 vertebrae to the botton of the T5 vertebrae. The images used in this annotation were pulled from the "images_annotation_2" file and include 150 identities.
 - [Annotatations_T1-T5_280_identities](Annotatations_T1-T5_280_identities)
   This includes.txt files coding a rectangle bounding box around the bodies of the 1st thoracic (T1) through 5th thoracic vertebrae (T5). The bounding box runs from the top of the T1 vertebrae to the botton of the T5 vertebrae. The images used in this annotation were pulled from the "images_annotation_2" file and include 280 identities.
-- [TestFOlder](TestFOlder)
-ansdflkajsdlkgfalkgfdlk
+- [Annotations_ALV](Annotations_ALV)
+New data added by Lex.
