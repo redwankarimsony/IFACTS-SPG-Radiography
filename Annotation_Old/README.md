@@ -14,3 +14,9 @@
   This includes.txt files coding a rectangle bounding box around the bodies of the 1st thoracic (T1) through 5th thoracic vertebrae (T5). The bounding box runs from the top of the T1 vertebrae to the botton of the T5 vertebrae. The images used in this annotation were pulled from the "images_annotation_2" file and include 280 identities.
 - [Annotations_ALV](Annotations_ALV)
 New data added by Lex.
+- [Test_images_radqual](Test_images_radqual)
+This folder includes the test annotations and images with radiographic quality coding added at the end of the file name.
+0 = 0%-25% of vertebral column visible
+1 = 25%-50% of vertebral column visible
+2 = 50%-75% of vertebral column visible
+3 = 75%-100% of vertebral column visible
