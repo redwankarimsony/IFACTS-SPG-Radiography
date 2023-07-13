@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 *.DS_Store
 */.DS_Store
+*/IQA/.DS_Store
+*/IQA/weights/*
 
 # C extensions
 *.so
