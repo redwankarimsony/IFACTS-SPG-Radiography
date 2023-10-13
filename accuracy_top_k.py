@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 from configs.config import configClass
 from dataset import XrayDataset
-from train import LightningTrainer
+from train_base import LightningTrainer
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
