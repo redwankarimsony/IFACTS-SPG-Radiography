@@ -235,6 +235,12 @@ if __name__ == "__main__":
                                  'whole'},
                         help="Select the bounding box configuration")
     
+    parser.add_argument("--experiment_name",
+                        type=str,
+                        default="base_experiment",
+                        help="Select the experiment name")
+    
+    
     
     args = parser.parse_args()
 
@@ -248,71 +254,3 @@ if __name__ == "__main__":
 
     torch.cuda.empty_cache()
     time.sleep(30)
-    
-
-
-
-
-# if __name__ == "__main__":
-#     """ To run this script:
-#         python train.py --model_arch resnet34 --gpu 7 --box_preset 3
-#     """
-#     parser = argparse.ArgumentParser(prog='IFACTS Experiment',
-#                                      description='What the program does',
-#                                      epilog='Text at the bottom of help')
-#     parser.add_argument("--model_arch", type=str, default="resnet34",
-#                         help="Select the model selection key.\nFor more look for cfr.model_arch in models.py file")
-#     parser.add_argument("--gpu", type=int, default=7,
-#                         help="Select which gpu you would like to use")
-#     parser.add_argument("--box_preset", type=int, default=0, choices={0, 1, 2, 3},
-#                         help="Select the bounding box configuration")
-#     args = parser.parse_args()
-
-#     print(*args)
-
-    # print(f"Model Architecture: {args.model_arch}")
-
-    # cfg = configClass()
-    # cfg.model_arch = args.model_arch
-    # cfg.cuda_devices = [args.gpu, ]
-    # cfg.box_preset = cfg.box_mapping[args.box_preset]
-    # cfg.make_results_dir()
-
-    # classifier = LightningTrainer(cfg)
-    # ds_train, ds_valid, dl_train, dl_valid = get_datasets(cfg)
-    
-
-    # early_stopper_callback = EarlyStopping(monitor="val_loss",
-    #                                        min_delta=0.00,
-    #                                        patience=50,
-    #                                        verbose=False,
-    #                                        mode="min")
-
-    # checkpoint_callback = ModelCheckpoint(save_top_k=4,
-    #                                       monitor="val_acc_epoch",
-    #                                       mode="max",
-    #                                       dirpath=os.path.join(cfg.results_dir, cfg.box_preset, cfg.model_arch),
-                                          
-    #                                       filename=cfg.model_arch+"_"+cfg.box_preset + "_{epoch:02d}-{val_acc_epoch:.4f}",
-    #                                       )
-    # logger = loggers.TensorBoardLogger(save_dir=cfg.results_dir,
-    #                                    name=f"{cfg.box_preset}",
-    #                                    version=cfg.model_arch)
-
-    # trainer = pl.Trainer(limit_train_batches=cfg.limit_train_batches,
-    #                      max_epochs=cfg.max_epoch,
-    #                      accelerator="gpu",
-    #                      devices=cfg.cuda_devices,
-    #                      log_every_n_steps=25,
-    #                      default_root_dir=os.path.join(cfg.results_dir, 
-    #                                                    cfg.box_preset, 
-    #                                                    cfg.model_arch),
-    #                      logger=logger,
-    #                      callbacks=[early_stopper_callback, 
-    #                                 checkpoint_callback], 
-    #                      gradient_clip_val=0.5,
-    #                      gradient_clip_algorithm="value")
-
-    # trainer.fit(model=classifier, 
-    #             train_dataloaders=dl_train, 
-    #             val_dataloaders=dl_valid)
