@@ -14,10 +14,31 @@ class ConfigClass:
                  gpu=7, 
                  experiment_name ="base_experiment",
                  finetune_model=False):
+        self.model_names = [
+            "resnet34", "resnet50", "resnet101",
+            "densenet121", "densenet161", "densenet169",
+            "densenet201", "efficientnet_b0", "efficientnet_b1",
+            "efficientnet_b2", "efficientnet_b3", "efficientnet_b4",
+            "efficientnet_b5", "efficientnet_b6", "efficientnet_b7",
+            "vit_large_r50_s32_384", "vit_large_patch32_384", "swin_t",
+            "swin_s", "swin_b" ]
+        
+        self.box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae", "whole"]
+                
 
         # Basic run parameters
-        self.model_arch = model_arch
-        self.box_preset = box_preset
+        if model_arch in self.model_names:
+            
+            self.model_arch = model_arch
+        else:
+            raise Exception(f"Model {model_arch} not found. Please choose from {self.model_names}")
+        
+
+        if self.box_preset in self.box_presets:
+            self.box_preset = box_preset
+        else:
+            raise Exception(f"Box preset {self.box_preset} not found. Please choose from {self.box_presets}")
+        
         self.cuda_devices = [gpu,]
         self.finetune_model = finetune_model
 
@@ -26,6 +47,9 @@ class ConfigClass:
         self.experiment_name = experiment_name
         self.results_dir = os.path.join(self.prefix, self.experiment_name)
         self.checkpoint_dir = os.path.join(self.results_dir, self.box_preset, self.model_arch)
+
+
+
 
         # Dataset parameters
         self._setup_dataset_parameters()
