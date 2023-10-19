@@ -70,6 +70,8 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
     box_presets = [x for x in os.listdir(experiment_name) if os.path.isdir(os.path.join(experiment_name, x))]   
 
     for box_preset in box_presets:
+        if box_preset == "summary":
+            continue
         # List all the models for the given box preset
         model_names = os.listdir(os.path.join(experiment_name, box_preset))
 
@@ -118,10 +120,11 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
     df = df.sort_values(by="val_acc", ascending=False)
 
     # Save the dataframe to the experiment directory
-    df.to_csv(os.path.join(experiment_name, "summary.csv"), index=False, sep=",")
+    os.makedirs(os.path.join(experiment_name, "summary"), exist_ok=True)    
+    df.to_csv(os.path.join(experiment_name, "summary", "summary.csv"), index=False, sep=",")
 
     # Print the dataframe path
-    print(f"\n\nSummary saved to {os.path.join(experiment_name, 'summary.csv')}")
+    print(f"\n\nSummary saved to {os.path.join(experiment_name, 'summary', 'summary.csv')}")
     
     return df
     
