@@ -13,7 +13,7 @@ import argparse
 
 
 
-def get_the_best_model(checkpoint_dir, ext=".ckpt"):
+def get_the_best_model(checkpoint_dir, full_path = False, ext=".ckpt"):
     """
     Returns the file path of the best model in the given checkpoint directory
 
@@ -30,7 +30,10 @@ def get_the_best_model(checkpoint_dir, ext=".ckpt"):
     # Get the checkpoint files
     ckpts = [x for x in files if x.endswith(ext)]
     # Return the best model
-    return  max(ckpts, key= lambda x: float(x.split("=")[-1].split(".")[0]))
+    if full_path:
+        return os.path.join(checkpoint_dir, max(ckpts, key= lambda x: float(x.split("=")[-1].split(".")[0])))
+    else:
+        return  max(ckpts, key= lambda x: float(x.split("=")[-1].split(".")[0]))
 
 
 
