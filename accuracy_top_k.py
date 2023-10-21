@@ -27,6 +27,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
+
+
+
 def inference(cfg, best_model_checkpoint, acc_order):
     ds_valid = XrayDataset(cfg, split="valid", transform=cfg.tfms_valid)
     dl_valid = DataLoader(ds_valid,

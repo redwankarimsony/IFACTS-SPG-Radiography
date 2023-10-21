@@ -13,6 +13,7 @@ import torch.nn.functional as F
 import mxnet as mx
 from tqdm import tqdm
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 
@@ -45,6 +46,29 @@ def get_top_k_predictions(y_hat, k=3):
     top_k_probs = top_k.values
 
     return top_k_labels, top_k_probs
+
+
+def get_top_k_accuracies(y_hats, y_trues, k_max=5):
+    accs = []
+
+    for k in range(1, k_max+1):
+        # Get top-k predictions
+        top_k_labels, top_k_probs = get_top_k_predictions(y_hats, k=k)
+
+        top_k_predictions = []
+        for y_true, top_k_label in zip(y_trues, top_k_labels):
+            if y_true.item() in top_k_label.tolist():
+                top_k_predictions.append(1.)
+            else:
+                top_k_predictions.append(0.)
+
+        acc = torch.mean(torch.tensor(top_k_predictions)).item()
+        accs.append(acc)
+
+    return accs
+    
+
+
 
 
 def inference(saved_model_path):
@@ -141,20 +165,19 @@ if __name__ == "__main__":
 
 
 
-    for k in range(1, 11):
-        # Get top-k predictions
-        top_k_labels, top_k_probs = get_top_k_predictions(y_hats, k=k)
+
+    accs = get_top_k_accuracies(y_hats, y_trues, k_max=5)
+
+    plt.plot(list(range(1, 6)), accs, marker="*", linewidth=2, markersize=10, label=args.model_arch)
+    plt.xlabel("K-th Order")
+    plt.ylabel("Accuracy")
+    plt.xticks(list(range(1, 6)))
+    plt.legend()
+    plt.show()
     
-        top_k_predictions = []
-        for y_true, top_k_label in zip(y_trues, top_k_labels):
-            if y_true.item() in top_k_label.tolist():
-                top_k_predictions.append(1.)
-            else:
-                top_k_predictions.append(0.)
 
-        acc = torch.mean(torch.tensor(top_k_predictions)).item()
+    print(accs)
 
-        print(f"Top-{k} Accuracy: {acc}")
 
 
     
