@@ -18,7 +18,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from configs.config import ConfigClass
 # from dataset import XrayDataset
-from dataset_mx import MXNetRecDataset
+from datasets import MXNetRecDataset
 from models import get_model
 from utils import get_gpu_with_least_memory_over_period
 import numpy as np

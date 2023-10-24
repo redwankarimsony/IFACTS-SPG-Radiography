@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from train_base import LightningTrainer, get_datasets
 from configs.config import ConfigClass
-from dataset_mx import MXNetRecDataset
+from datasets import MXNetRecDataset
 from utils import get_gpu_with_least_memory_over_period
 from summarize import get_the_best_model
 

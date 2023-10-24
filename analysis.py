@@ -13,9 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ResNet <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-# Generate the top-5 accuracies of all the resnet models
-
 
 def generate_model_wise_top_k_acc_plot(experiment_name, models, model_family, markers, top_ks, display=False ):
     """_summary_
@@ -68,34 +65,135 @@ def generate_model_wise_top_k_acc_plot(experiment_name, models, model_family, ma
 
 
 
+def generate_CMC_for_top_models(top_ks=5, plot_best = 7):
+    # Load the summary file
+    
+    experiment_name = "base_experiment"
+    df = pd.read_csv(os.path.join("experiments", experiment_name, "summary", "summary.csv"))
+    df_top_5 = df.iloc[:plot_best]
+    markers = ["*", "o", "v", "s", "p", "P", "h", "H"]
+
+
+    fig = plt.figure(figsize=(10, 6), dpi=200)
+
+    # Enumerate each row and get the model summary
+    for idx, row in df_top_5.iterrows():
+        # Get the model summary
+        top_acc, y_preds = get_model_summary(experiment_name=experiment_name,
+                                            model_arch=row["model_name"],
+                                            box_preset=row["box_preset"],
+                                            top_ks=top_ks,
+                                            gpu=2)
+        
+        # Plot the top-5 accuracies
+        plt.plot(list(range(1, top_ks+1)), 
+                top_acc, 
+                label=f"{row['model_name']}, {row['box_preset']}", 
+                linewidth=2, 
+                marker=markers[idx], markersize=10) 
+        
+    plt.legend(loc='lower right')
+    plt.xticks(list(range(1, top_ks+1)))
+    plt.xlabel("K-th Order")
+    plt.ylabel("Accuracy")
+    plt.title(f"Top-5 Accuracies of Best Models")
+
+    plt.savefig(os.path.join("plots", experiment_name, f"top_{top_ks}_accs_for_best_models.png"))
+    plt.show()
+
+
+
+def generate_CMC_for_top_models_with_box_preset(take_top=3):
+    df = pd.read_csv(os.path.join("experiments", "base_experiment", "summary", "summary.csv"))
+    df_t1_t5 = df[df["box_preset"]=="t1-t5"].reset_index(drop=True).iloc[:take_top]
+    df_clavicle = df[df["box_preset"]=="clavicle-only"].reset_index(drop=True)[:take_top]
+    df_complete = df[df["box_preset"]=="complete-vertebrae"].reset_index(drop=True)[:take_top]
+
+
+    # cobine the dataframes
+    df_combined = pd.concat([df_t1_t5, df_clavicle, df_complete], axis=0).reset_index(drop=True)
+    
+
+    # Generate 12 markers
+    markers = ["*", "o", "v", "s", "p", "P", "h", "H", "D", "d", "X", "x"]
+
+    fig = plt.figure(figsize=(10, 6), dpi=200)
+    for idx, row in df_combined.iterrows():
+        # Get the model summary
+        top_acc, y_preds = get_model_summary(experiment_name="base_experiment",
+                                            model_arch=row["model_name"],
+                                            box_preset=row["box_preset"],
+                                            top_ks=5,
+                                            gpu=2)
+        
+        # Plot the top-5 accuracies
+        plt.plot(list(range(1, 6)), 
+                top_acc, 
+                label=f"{row['model_name']}, {row['box_preset']}", 
+                linewidth=2, 
+                marker=markers[idx], markersize=10)
+        
+    plt.legend(loc='lower right')
+    plt.xticks(list(range(1, 6)))
+    plt.xlabel("K-th Order")
+    plt.ylabel("Accuracy")
+    plt.title(f"Top-5 Accuracies for best 3 models of each box preset")
+    plt.savefig(os.path.join("plots", "base_experiment", f"top_5_accs_for_best_models_with_each_preset.png"), dpi=200)
+    plt.show()
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
-    # Generate the top-5 accuracies of all the resnet models
-    generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
-                                        models=["resnet34", "resnet50", "resnet101"],
-                                        model_family="ResNet",
-                                        markers=["*", "o", "v"],
-                                        top_ks=5)
+    resnets = ["resnet34", "resnet50", "resnet101"]
+    densenets = ["densenet121", "densenet161", "densenet169", "densenet201"]
+    efficentnets = ["efficientnet_b0", "efficientnet_b1", "efficientnet_b2", "efficientnet_b3", 
+                    "efficientnet_b4", "efficientnet_b5", "efficientnet_b6", "efficientnet_b7"]
+
+#     # Generate the top-5 accuracies of all the resnet models
+#     generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
+#                                         models=resnets,
+#                                         model_family="ResNet",
+#                                         markers=["*", "o", "v"],
+#                                         top_ks=5)
       
 
 
-    # Generate the top-5 accuracies of all the densenet models
-    generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
-                                        models=["densenet121", "densenet161", "densenet169", "densenet201"],
-                                        model_family="DenseNet",
-                                        markers=["*", "o", "v", "s"],
-                                        top_ks=5)
+#     # Generate the top-5 accuracies of all the densenet models
+#     generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
+#                                         models=densenets,
+#                                         model_family="DenseNet",
+#                                         markers=["*", "o", "v", "s"],
+#                                         top_ks=5)
     
 
 
-    # Generate the top-5 accuracies of all the efficientnet models
+#     # Generate the top-5 accuracies of all the efficientnet models
 
-    generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
-                                        models=["efficientnet_b0", "efficientnet_b1", "efficientnet_b2", "efficientnet_b3", "efficientnet_b4", "efficientnet_b5", "efficientnet_b6", "efficientnet_b7"],
-                                        model_family="EfficientNet",
-                                        markers=["*", "o", "v", "s", "p", "P", "h", "H"],
-                                        top_ks=5)
+#     generate_model_wise_top_k_acc_plot(experiment_name="base_experiment",
+#                                         models=efficentnets,
+#                                         model_family="EfficientNet",
+#                                         markers=["*", "o", "v", "s", "p", "P", "h", "H"],
+#                                         top_ks=5)
     
+    # Generate The CMC curve for the top performing models
+    generate_CMC_for_top_models(top_ks=20, plot_best=7)
+
+
+    # Generate the CMC curve for the top N models of each box preset
+    # generate_CMC_for_top_models_with_box_preset(take_top=3)
+
 
 
     
