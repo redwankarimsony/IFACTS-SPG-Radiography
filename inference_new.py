@@ -49,6 +49,17 @@ def get_top_k_predictions(y_hat, k=3):
 
 
 def get_top_k_accuracies(y_hats, y_trues, k_max=5):
+    """_summary_
+
+    Args:
+        y_hats (_type_): The softmax output of the model
+        y_trues (_type_): The true labels of the images
+        k_max (int, optional): The order upto which accuracy should be calculated. Defaults to 5.
+
+    Returns:
+        _type_: top-k accuracies for each order
+    """
+
     accs = []
 
     for k in range(1, k_max+1):
@@ -122,18 +133,39 @@ def inference(saved_model_path):
 
 
 
+def get_model_summary(experiment_name, model_arch, box_preset, top_ks, gpu, return_predictions=False):
+    """_summary_
 
-    #         top_k_labels, top_k_probs = get_predictions(y_hat, k=10)
+    Args:
+        experiment_name (_type_): Name of the experiment
+        model_arch (_type_): one of the model architectures from the config.py file
+        box_preset (_type_): one of the box presets from the config.py file
+        top_ks (_type_): upto what order to calculate the accuracy
+        gpu (_type_): the gpu to use
+        return_predictions (bool, optional): if true returns the logits also.
 
-    #         for label, top_k_label in zip(labels, top_k_labels):
-    #             if label.item() in top_k_label.tolist():
-    #                 top_k_predictions.append(1.)
-    #             else:
-    #                 top_k_predictions.append(0.)
-                    
-    #         all_predictions.extend(top_k_predictions)
+    Returns:
+        accs: a list of accuracies for each order in top_ks
+        y_hats: the logits of the model output
+    """
+    
+    # Get the best saved model path from the experiment name, box preset and model architecture
+    saved_model_path = get_the_best_model(os.path.join(os.path.join("experiments",
+                                                                    experiment_name),
+                                            box_preset,
+                                            model_arch),
+                                            full_path=True)
+    
+    # Get the predictions from the model path
+    y_hats, y_trues, filenames = inference(saved_model_path)
 
-    # print(f"Accuracy: {np.mean(all_predictions)}")
+    accs = get_top_k_accuracies(y_hats, y_trues, k_max=top_ks)
+
+    if return_predictions:
+        accs, y_hats
+    else:
+        return accs, None
+    
 
 
 
@@ -178,24 +210,6 @@ if __name__ == "__main__":
 
     print(accs)
 
-
-
-    
-
-
-
-    
-    
-    
-    
-#     
-#     print(args)
-
-#     cfg = ConfigClass(**vars(args))
-#     print(cfg)
-
-
-#     # inference(cfg)
 
 
 
