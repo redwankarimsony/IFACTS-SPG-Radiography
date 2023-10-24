@@ -34,7 +34,7 @@ class ConfigClass:
             raise Exception(f"Model {model_arch} not found. Please choose from {self.model_names}")
         
 
-        if self.box_preset in self.box_presets:
+        if box_preset in self.box_presets:
             self.box_preset = box_preset
         else:
             raise Exception(f"Box preset {self.box_preset} not found. Please choose from {self.box_presets}")
