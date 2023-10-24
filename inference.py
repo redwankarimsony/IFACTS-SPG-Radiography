@@ -26,6 +26,12 @@ from summarize import get_the_best_model
 
 torch.set_float32_matmul_precision("high")
 
+__all__ = ["get_top_k_predictions", 
+           "get_top_k_accuracies", 
+           "inference", 
+           "get_model_summary"]
+
+
 
 def get_top_k_predictions(y_hat, k=3):
     """ Given the softmax output, get the predicted labels and top-k predictions
@@ -133,7 +139,7 @@ def inference(saved_model_path):
 
 
 
-def get_model_summary(experiment_name, model_arch, box_preset, top_ks, gpu, return_predictions=False):
+def get_model_summary(experiment_name, model_arch, box_preset, top_ks, gpu):
     """_summary_
 
     Args:
@@ -160,11 +166,8 @@ def get_model_summary(experiment_name, model_arch, box_preset, top_ks, gpu, retu
     y_hats, y_trues, filenames = inference(saved_model_path)
 
     accs = get_top_k_accuracies(y_hats, y_trues, k_max=top_ks)
-
-    if return_predictions:
-        accs, y_hats
-    else:
-        return accs, None
+    
+    return accs, y_hats
     
 
 
