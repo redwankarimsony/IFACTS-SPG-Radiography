@@ -156,11 +156,11 @@ def get_logger(cfg):
 def get_callbacks(cfg):
     early_stopper_callback = EarlyStopping(monitor="val_loss",
                                            min_delta=0.00,
-                                           patience=50,
+                                           patience=40,
                                            verbose=False,
                                            mode="min")
 
-    checkpoint_callback = ModelCheckpoint(save_top_k=4,
+    checkpoint_callback = ModelCheckpoint(save_top_k=2,
                                           monitor="val_acc_epoch",
                                           mode="max",
                                           dirpath=os.path.join(cfg.results_dir, cfg.box_preset, cfg.model_arch),
@@ -190,7 +190,7 @@ def main(cfg):
                             max_epochs=cfg.max_epoch,
                             accelerator="gpu",
                             devices=cfg.cuda_devices,
-                            log_every_n_steps=25,
+                            log_every_n_steps=50,
                             default_root_dir=os.path.join(cfg.results_dir,
                                                             cfg.box_preset,
                                                             cfg.model_arch),

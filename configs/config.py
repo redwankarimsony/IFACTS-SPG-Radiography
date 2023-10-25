@@ -127,14 +127,32 @@ class ConfigClass:
                 tf.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             ])
 
-        
+        elif self.experiment_name == "augmentation_no_crop":
+            self.tfms_train = tf.Compose([
+                tf.ToTensor(),
+                tf.Resize((self.height, self.width)),
+                tf.RandomRotation(degrees=8),
+                tf.RandomPerspective(distortion_scale=0.2, p=0.3),
+                tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
+                tf.Normalize(mean=self.stat_mean, std=self.stat_std)
+            ])
 
-        self.tfms_valid = tf.Compose([
-            tf.ToTensor(),
-            tf.Resize(self.width),
-            tf.CenterCrop(self.width),
-            tf.Normalize(mean=self.stat_mean, std=self.stat_std)
-        ])
+        
+        if self.experiment_name in ["base_experiment", "augmentation_check"]:
+            self.tfms_valid = tf.Compose([
+                tf.ToTensor(),
+                tf.Resize(self.width),
+                tf.CenterCrop(self.width),
+                tf.Normalize(mean=self.stat_mean, std=self.stat_std)
+            ])
+
+        elif self.experiment_name == "augmentation_no_crop":
+            self.tfms_valid = tf.Compose([
+                tf.ToTensor(),
+                tf.Resize((self.height, self.width)),d
+                tf.Normalize(mean=self.stat_mean, std=self.stat_std)
+            ])
+
 
     def _make_results_dir(self):
         try:
