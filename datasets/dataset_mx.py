@@ -52,7 +52,7 @@ class MXNetRecDataset(Dataset):
         label = int(header.label)
         filename = self.idx2file[str(idx)]
 
-        return img, label, filename
+        return img, label, filename.strip()
 
 def benchmark_loading(dataset):
     start = time.time()
