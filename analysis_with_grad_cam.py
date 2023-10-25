@@ -1,4 +1,4 @@
-#       accuracy_top_k.py
+#       analysis_with_grad_cam.py
 #       Created by Redwan Sony (sonymd) at 10/24/23
 #       Mail: sonymd@msu.edu
 #       GitHub: www.github.com/redwankarimsony
@@ -87,11 +87,6 @@ def denormalize(tensor, mean, std, numpy=True):
     else:
         return tensor.numpy()
     
-
-
-
-
-
 
 if __name__ == "__main__":
     # Define the transformations you want to apply to the images

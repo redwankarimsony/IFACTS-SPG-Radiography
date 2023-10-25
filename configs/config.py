@@ -149,7 +149,7 @@ class ConfigClass:
         elif self.experiment_name == "augmentation_no_crop":
             self.tfms_valid = tf.Compose([
                 tf.ToTensor(),
-                tf.Resize((self.height, self.width)),d
+                tf.Resize((self.height, self.width)),
                 tf.Normalize(mean=self.stat_mean, std=self.stat_std)
             ])
 

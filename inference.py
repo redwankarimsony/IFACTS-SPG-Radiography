@@ -87,8 +87,8 @@ def get_top_k_accuracies(y_hats, y_trues, k_max=5):
 
 
 
-
-def inference(saved_model_path):
+@torch.no_grad()
+def inference(saved_model_path, map_location="cuda:0"):
     """Takes the pytorch lightning path as the input path and returns the predictions
 
     Args:
@@ -101,34 +101,34 @@ def inference(saved_model_path):
     """
 
     # Load the model
-    classifier = LightningTrainer.load_from_checkpoint(saved_model_path)
+    classifier = LightningTrainer.load_from_checkpoint(saved_model_path).to(map_location)
     classifier.eval()
-    print("Loaded Model Successfully")
+    print(f"Loaded Model Successfully at device: {classifier.device}")
+
 
     # Load the datasets
     ds_train, ds_valid, dl_train, dl_valid = get_datasets(classifier.cfg)
     print("Loaded Datasets Successfully")
 
-    # Send the model to the GPU
-    classifier.cuda()
+    # # Send the model to the GPU
+    # classifier.cuda(1)
 
 
-    
-    with torch.no_grad():
-        y_hats, y_trues, all_filenames = [], [], []
 
-        # Iterate Over the validation dataloader
-        for i, batch in tqdm(enumerate(dl_valid), total=len(dl_valid), desc="Inference"):
-            images, labels, filenames = batch
+    y_hats, y_trues, all_filenames = [], [], []
 
-            # Forward pass
-            y_hat = classifier.model(images.cuda())
-            y_hat = F.softmax(y_hat, dim=1)
+    # Iterate Over the validation dataloader
+    for i, batch in tqdm(enumerate(dl_valid), total=len(dl_valid), desc="Inference"):
+        images, labels, filenames = batch
 
-            # Append the results
-            y_hats.append(y_hat.cpu())
-            y_trues.extend(labels.cpu().tolist())
-            all_filenames.extend(filenames)
+        # Forward pass
+        y_hat = classifier.model(images.to(torch.device(map_location)))
+        y_hat = F.softmax(y_hat, dim=1)
+
+        # Append the results
+        y_hats.append(y_hat.cpu())
+        y_trues.extend(labels.cpu().tolist())
+        all_filenames.extend(filenames)
 
     # Convert the list of tensors to a single tensor
     y_hats = torch.concatenate(y_hats, dim=0)

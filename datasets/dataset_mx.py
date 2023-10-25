@@ -22,6 +22,9 @@ class MXNetRecDataset(Dataset):
 
         # Get the number of items in the record file
         self.length = len(list(self.record.keys))
+
+        # Get the idx to original ID mapping
+        self.label2id = self.label2ID()
         print(self.length)
 
     def __len__(self):
@@ -34,6 +37,14 @@ class MXNetRecDataset(Dataset):
             idx2file = {line[0]: line[2] for line in lines}
 
             return idx2file
+        
+    def label2ID(self):
+        label2id = {}
+        for idx in range(self.length):
+            record = self.record.read_idx(idx)
+            header, img = mx.recordio.unpack(record)
+            label2id[header.label] = self.idx2file[str(idx)].split("/")[0]
+        return label2id
 
     def __getitem__(self, idx):
         # Get the record at the given index
