@@ -69,6 +69,12 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
 
     all_models = []
 
+    if len(experiment_name.split("/")) !=2:
+        print("Please provide the experiment name in the following format: experiments/<experiment_name>")
+        experiment_name = os.path.join("experiments", experiment_name)
+        print(f"Using the experiment name: {experiment_name}")
+        
+    
     # List all the box presets
     box_presets = [x for x in os.listdir(experiment_name) if os.path.isdir(os.path.join(experiment_name, x))]   
 
