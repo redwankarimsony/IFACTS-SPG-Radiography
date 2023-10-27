@@ -88,7 +88,7 @@ def get_top_k_accuracies(y_hats, y_trues, k_max=5):
 
 
 @torch.no_grad()
-def inference(saved_model_path, map_location="cuda:0"):
+def inference(saved_model_path, logits=False, map_location="cuda:0"):
     """Takes the pytorch lightning path as the input path and returns the predictions
 
     Args:
@@ -123,10 +123,15 @@ def inference(saved_model_path, map_location="cuda:0"):
 
         # Forward pass
         y_hat = classifier.model(images.to(torch.device(map_location)))
-        y_hat = F.softmax(y_hat, dim=1)
+        
+        if logits:
+            # Append the logits with the results
+            y_hats.append(y_hat.cpu())
+        else:
+            # Append the softmax output with the results
+            y_hats.append(F.softmax(y_hat, dim=1).cpu())
 
-        # Append the results
-        y_hats.append(y_hat.cpu())
+        
         y_trues.extend(labels.cpu().tolist())
         all_filenames.extend(filenames)
 
@@ -134,6 +139,10 @@ def inference(saved_model_path, map_location="cuda:0"):
     y_hats = torch.concatenate(y_hats, dim=0)
     y_trues = torch.tensor(y_trues)
     
+    # Free the memory
+    classifier = None
+    torch.cuda.empty_cache()
+
     return y_hats, y_trues, all_filenames
 
 
