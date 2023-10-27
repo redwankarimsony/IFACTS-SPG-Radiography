@@ -10,12 +10,13 @@ import torch
 import pandas as pd
 from train_base import LightningTrainer, get_datasets
 from inference import inference
+from analysis_f1_scores import *
 
 
-def get_failure_cases(best_model_path, save=False):
+def get_failure_cases(best_model_path, save=False, device="cuda:1"):
     # Get Model location:
     
-    y_hats, y_trues, filenames = inference(saved_model_path=best_model_path, map_location="cuda:1")
+    y_hats, y_trues, filenames = inference(saved_model_path=best_model_path, map_location=device)
     y_preds = y_hats.argmax(dim=1)
         
 
@@ -48,18 +49,40 @@ def get_failure_cases(best_model_path, save=False):
 
 
 
-if __name__ == "__main__":
-    best_model_path = "experiments/base_experiment/t1-t5/densenet161/densenet161_t1-t5_epoch=541-val_acc_epoch=0.8122.ckpt"
-
-    df = get_failure_cases(best_model_path, save=True)
-
+def get_detailed_report(y_preds, y_trues):
+    report = {}
+    report['f1_macro'] = get_macro_f1_score(y_preds=y_preds,
+                                           y_trues=y_trues)
     
-    # for y_pred, y_true, filename  in zip(y_preds, y_trues, filenames):
-    #     if y_true != y_pred:
-    #         print(filename, "Original: ", label2id[y_true.item()], "Predicted: ", label2id[y_pred.item()])
+    report["f1_micro"] = get_micro_f1_score(y_preds=y_preds,
+                                           y_trues=y_trues)
+    
+    report["f1_weighted"] = get_weighted_f1_score(y_preds=y_preds,
+                                                    y_trues=y_trues)
+    
+    report["classification_report"] = get_classification_report(y_preds=y_preds,
+                                                                y_trues=y_trues)
+    
+    return report
 
 
-    print(df.head())
+if __name__ == "__main__":
+    best_model_path = "experiments/augmentation_no_crop/clavicle-only/densenet121/densenet121_clavicle-only_epoch=351-val_acc_epoch=0.8186.ckpt"
+
+    # # Get the failure analysis
+    # df = get_failure_cases(best_model_path, save=True)
+
+
+    # Get the predictions
+    y_hats, y_trues, filenames = inference(saved_model_path=best_model_path, map_location="cuda:1")
+
+    # Get the report
+    report = get_detailed_report(y_preds=y_hats.argmax(dim=1).numpy(), y_trues=y_trues)
+    with open("report.txt", "w") as f:
+        f.write(str(report["classification_report"]))
+    
+
+
 
 
 
