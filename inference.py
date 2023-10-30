@@ -108,7 +108,7 @@ def inference(saved_model_path, logits=False, map_location="cuda:0"):
 
     # Load the datasets
     ds_train, ds_valid, dl_train, dl_valid = get_datasets(classifier.cfg)
-    print("Loaded Datasets Successfully")
+    print("\n\nLoaded Datasets Successfully")
 
     # # Send the model to the GPU
     # classifier.cuda(1)

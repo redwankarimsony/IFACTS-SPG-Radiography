@@ -144,7 +144,7 @@ def generate_CMC_for_top_models_with_box_preset(experiment_name, take_top=3, top
     fig = plt.figure(figsize=(10, 6), dpi=200)
     for idx, row in df_combined.iterrows():
         # Get the model summary
-        top_acc, y_preds = get_model_summary(experiment_name="base_experiment",
+        top_acc, y_preds = get_model_summary(experiment_name=experiment_name,
                                             model_arch=row["model_name"],
                                             box_preset=row["box_preset"],
                                             top_ks=top_ks,
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name", type=str, default="base_experiment", 
                         choices=["base_experiment",
                                  "augmentation_no_crop"])
-    parser.add_argument("--top_ks", type=int, default=5, help="Top-k accuracies to be plotted")
+    parser.add_argument("--top_ks", type=int, default=10, help="Top-k accuracies to be plotted")
     parser.add_argument("--plot_best", type=int, default=7, help="Number of best models to be plotted")
     parser.add_argument("--take_top", type=int, default=3, 
                         help="Number of best models to be plotted for each box preset")
@@ -298,12 +298,13 @@ if __name__ == "__main__":
 
     
     # Generate the CMC curve for a single model with different box presets
-    generate_CMC_single_model_multiple_boxes(experiment_name=args.experiment_name,
-                                            model_arch=args.model_arch,
-                                            box_presets=["t1-t5", 
-                                                         "clavicle-only", 
-                                                         "complete-vertebrae"],
-                                            top_ks=args.top_ks)
+    if args.model_arch !="all":
+        generate_CMC_single_model_multiple_boxes(experiment_name=args.experiment_name,
+                                                model_arch=args.model_arch,
+                                                box_presets=["t1-t5", 
+                                                            "clavicle-only", 
+                                                            "complete-vertebrae"],
+                                                top_ks=args.top_ks)
     
 
 

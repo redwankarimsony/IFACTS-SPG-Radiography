@@ -73,7 +73,7 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
         print("Please provide the experiment name in the following format: experiments/<experiment_name>")
         experiment_name = os.path.join("experiments", experiment_name)
         print(f"Using the experiment name: {experiment_name}")
-        
+
     
     # List all the box presets
     box_presets = [x for x in os.listdir(experiment_name) if os.path.isdir(os.path.join(experiment_name, x))]   
@@ -111,13 +111,7 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
         # Find the validation accuracy:
         val_acc  = float(parts[-1].split("=")[-1].replace(".ckpt", ""))
         
-        # Print the results
-        if verbose:
-            if idx == 0:
-                    print(f"{'MODEL':<20} {'CATEGORY':<25} {'SCORE'}")
-                    print(f"{'-----':<20} {'--------':<25} {'-----'}")
-        
-            print(f"{model_name:<20} {box_preset:<25} {val_acc:.4f}")
+
 
         # Append the results to the data list
         data.append({"model_name": model_name, "box_preset": box_preset, "val_acc": val_acc, "saved_model": filepath})
@@ -126,7 +120,7 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
     df = pd.DataFrame(data)
 
     # Sort the dataframe by validation accuracy
-    df = df.sort_values(by="val_acc", ascending=False)
+    df = df.sort_values(by="val_acc", ascending=False).reset_index(drop=True)
 
     # Save the dataframe to the experiment directory
     os.makedirs(os.path.join(experiment_name, "summary"), exist_ok=True)    
@@ -134,7 +128,17 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
 
     # Print the dataframe path
     print(f"\n\nSummary saved to {os.path.join(experiment_name, 'summary', 'summary.csv')}")
-    
+
+    # Print the results
+    if verbose:
+        for idx, row in df.iterrows():
+            if idx == 0:
+                print(f"{'MODEL':<20} {'BOX PRESET':<25} {'VAL ACC'}")
+                print(f"{'-----':<20} {'--------':<25} {'-----'}")
+                print(f"{row['model_name']:<20} {row['box_preset']:<25} {row['val_acc']:.4f}")
+            else:
+                print(f"{row['model_name']:<20} {row['box_preset']:<25} {row['val_acc']:.4f}")
+            
     return df
     
 
