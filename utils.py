@@ -1,5 +1,5 @@
 import subprocess
-import re
+import cv2
 import time
 
 def get_gpu_usage():
@@ -34,9 +34,34 @@ def get_gpu_with_least_memory_over_period(period=20, interval=1):
     return min(avg_usages, key=avg_usages.get)
 
 
-if __name__ == "__main__":
-    gpu_index = get_gpu_with_least_memory_over_period()
-    if gpu_index is not None:
-        print(f"GPU index with the least amount of resources being used over the last 20 seconds: {gpu_index}")
+
+
+def histogram_normalization(img, img_mode="RGB"):
+    # Histogram normalization in v channel
+    if img_mode == "RGB":
+        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     else:
-        print("Unable to obtain GPU information. Please ensure you have NVIDIA GPUs and nvidia-smi installed.")
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv[:,:,2] = cv2.equalizeHist(hsv[:,:,2])
+    
+    if img_mode =="RGB":
+        img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+    else:
+        img = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    return img
+
+
+
+
+if __name__ == "__main__":
+    # gpu_index = get_gpu_with_least_memory_over_period()
+    # if gpu_index is not None:
+    #     print(f"GPU index with the least amount of resources being used over the last 20 seconds: {gpu_index}")
+    # else:
+    #     print("Unable to obtain GPU information. Please ensure you have NVIDIA GPUs and nvidia-smi installed.")
+
+
+    img = cv2.imread("/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped_images/t1-t5/valid/023/023_PM_Chest_AP2.png")
+
+    import matplotlib.pyplot as plt
+

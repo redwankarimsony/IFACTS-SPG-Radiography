@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from configs.config import configClass
-from dataset import XrayDataset
+from datasets import XrayDataset
 from train_base import LightningTrainer
 
 matplotlib.use("Agg")
