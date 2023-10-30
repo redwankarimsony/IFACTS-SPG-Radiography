@@ -5,8 +5,10 @@
 #       Graduate Researcher, iPRoBe Lab, CSE, MSU
 
 
+
 import os
 import torch
+import argparse
 import pandas as pd
 from train_base import LightningTrainer, get_datasets
 from inference import inference
@@ -67,19 +69,29 @@ def get_detailed_report(y_preds, y_trues):
 
 
 if __name__ == "__main__":
-    best_model_path = "experiments/augmentation_no_crop/clavicle-only/densenet121/densenet121_clavicle-only_epoch=351-val_acc_epoch=0.8186.ckpt"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment_name", type=str, default="base_experiment")
+    args = parser.parse_args()
 
-    # # Get the failure analysis
-    # df = get_failure_cases(best_model_path, save=True)
-
+    # Get the best model path
+    row_best =pd.read_csv(os.path.join("experiments", args.experiment_name, 'summary', 'summary.csv')).iloc[0]
+    best_model_path = os.path.join("experiments", args.experiment_name, row_best['box_preset'], row_best['model_name'], row_best['saved_model'])
 
     # Get the predictions
-    y_hats, y_trues, filenames = inference(saved_model_path=best_model_path, map_location="cuda:1")
+    y_hats, y_trues, filenames = inference(saved_model_path=best_model_path, map_location="cuda:0")
 
     # Get the report
     report = get_detailed_report(y_preds=y_hats.argmax(dim=1).numpy(), y_trues=y_trues)
-    with open("report.txt", "w") as f:
-        f.write(str(report["classification_report"]))
+    
+    # Write the report to a file
+    with open(os.path.join("experiments", args.experiment_name, row_best['box_preset'], row_best['model_name'], "report.txt"), "w") as f:
+        f.write(str(report))
+        print("Report saved to {}".format(os.path.join("experiments", args.experiment_name, row_best['box_preset'], row_best['model_name'], "report.txt")))
+
+
+    # Get the failure cases
+    df = get_failure_cases(best_model_path=best_model_path, save=True, device="cuda:0")
+
     
 
 
