@@ -70,7 +70,7 @@ def get_detailed_report(y_preds, y_trues):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment_name", type=str, default="base_experiment")
+    parser.add_argument("--experiment_name", type=str, default="base_experiment")   
     args = parser.parse_args()
 
     # Get the best model path

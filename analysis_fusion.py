@@ -8,6 +8,7 @@
 
 import os.path as osp
 import pickle
+import argparse
 import pandas as pd
 from tqdm import tqdm
 import torch.nn.functional as F
@@ -54,7 +55,7 @@ def generate_all_logit_predictions(experiment_name="base_experiment"):
             print("Doing inference for {}".format((model_name, box_preset)))
             # Do the inference
             logit_predictions[(model_name, box_preset)] = inference(saved_model_path=checkpoint_dir, 
-                                                                logits=True, map_location="cuda:0")
+                                                                logits=True, map_location="cuda:7")
         
         
         # Save the predictions
@@ -76,7 +77,7 @@ def load_saved_predictions(experiment_name="base_experiment", verbose=True):
     return logit_predictions
 
 
-def make_fusions(experiment_name='base_experiment', fuse_top=6):
+def make_fusions(experiment_name='base_experiment', fuse_top=6, fuse_together=3):
     df = pd.read_csv(osp.join("experiments" ,experiment_name, "summary", "summary.csv"))[:fuse_top]
 
     # Load the predictions
@@ -87,7 +88,7 @@ def make_fusions(experiment_name='base_experiment', fuse_top=6):
     print(chosen_keys)
 
     keys_idx = list(range(len(chosen_keys)))
-    combinations_idx = list(combinations(keys_idx, 3))
+    combinations_idx = list(combinations(keys_idx, fuse_together))
     print(combinations_idx)
 
     all_fusions = []
@@ -108,29 +109,37 @@ def make_fusions(experiment_name='base_experiment', fuse_top=6):
         accs = get_top_k_accuracies(F.softmax(y_hats_comb, dim=1), y_trues, k_max=5)
         
         # print(tuple(keys), '\t\t', accs[0])
-        all_fusions.append((tuple(keys), accs[0]))
+        all_fusions.append((tuple(keys), accs[0], accs))
 
     # Sort all fusions based on the keys
     all_fusions = sorted(all_fusions, key=lambda x: x[1], reverse=True)
     
-    for comb_models, accuracy in all_fusions:
-        print(comb_models, '\t\t', accuracy)
+    print("\n\nAll Fusions Rank-1 Scores\n")
+    for comb_models, accuracy, _ in all_fusions:
+        print(comb_models, '>>>>>>>>', accuracy)
 
+    # Print the best fusion
+    print("\n\nBest Fusion\n")
+    print(all_fusions[0][0])
+    for idx , acc in enumerate(all_fusions[0][2]):
+        print(f"Top {idx+1} Accuracy: {acc}")
 
+    print("\n\n")   
 
     # plt.bar([comb_models[0] for comb_models, accuracy in all_fusions], 
     #          [accuracy for comb_models, accuracy in all_fusions], marker="*", linewidth=2, markersize=10, label="Fusion")
     labels = []
-    for comb_models, accuracy in all_fusions[:5]:
+    for comb_models, accuracy, _ in all_fusions[:5]:
         a = []
         for comb_model in comb_models:
+            # print(comb_model)
             a.append(comb_model.replace("efficientnet","E").replace("resnet", "R").replace("densenet", "D"))
         labels.append("\n".join(a))
                                                                          
     plt.bar(labels, 
-             [accuracy for comb_models, accuracy in all_fusions[:5]])
+             [accuracy for comb_models, accuracy, _ in all_fusions[:5]])
     plt.xticks()
-    plt.ylim([0.8, .9])
+    plt.ylim([0.8, .95])
     plt.xlabel("Model")
     plt.ylabel("Accuracy")
     plt.show()
@@ -141,9 +150,13 @@ def make_fusions(experiment_name='base_experiment', fuse_top=6):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment_name", type=str, default="base_experiment")
+    args = parser.parse_args()
+
     # generate_all_logit_predictions
-    # generate_all_logit_predictions()
+    # generate_all_logit_predictions(experiment_name=args.experiment_name)
 
     # make_fusions
-    make_fusions(experiment_name='base_experiment', fuse_top=6)
+    make_fusions(experiment_name=args.experiment_name, fuse_top=7, fuse_together=4)
 
