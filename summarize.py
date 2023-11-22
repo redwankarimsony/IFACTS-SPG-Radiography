@@ -7,8 +7,10 @@
 
 
 import os
+import torch
 import pandas as pd
 import argparse
+from tqdm import tqdm
 
 
 
@@ -68,12 +70,6 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
 
 
     all_models = []
-
-    if len(experiment_name.split("/")) !=2:
-        print("Please provide the experiment name in the following format: experiments/<experiment_name>")
-        experiment_name = os.path.join("experiments", experiment_name)
-        print(f"Using the experiment name: {experiment_name}")
-
     
     # List all the box presets
     box_presets = [x for x in os.listdir(experiment_name) if os.path.isdir(os.path.join(experiment_name, x))]   
@@ -95,7 +91,7 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
 
     data = []
 
-    for idx, filepath in enumerate(all_models):
+    for idx, filepath in tqdm(enumerate(all_models)):
         parts = filepath.split("_")
 
         # If the model name starts with efficientnet, then the model name is
@@ -110,11 +106,33 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
 
         # Find the validation accuracy:
         val_acc  = float(parts[-1].split("=")[-1].replace(".ckpt", ""))
+
+        # Find num of parameters
+        filepath = os.path.join(experiment_name, box_preset, model_name, filepath)
+        
+        state_dict = torch.load(filepath)['state_dict']
+        
+        # Calculate the total number of parameters
+        total_params = round(sum(p.numel() for p in state_dict.values())/(1e6), 2) 
+
+        
+        
         
 
 
         # Append the results to the data list
-        data.append({"model_name": model_name, "box_preset": box_preset, "val_acc": val_acc, "saved_model": filepath})
+        data.append({"model_name": model_name, "num_paramsM": total_params, "box_preset": box_preset, "val_acc": val_acc, "saved_model": filepath})
+
+    return data
+
+
+
+
+def summarize_multiple_experiments(experiment_name, verbose=True):
+
+    data = summarize_single_experiment(experiment_name=experiment_name, verbose=verbose)
+
+    
 
     # Create a dataframe from the results
     df = pd.DataFrame(data)
@@ -125,21 +143,20 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
     # Save the dataframe to the experiment directory
     os.makedirs(os.path.join(experiment_name, "summary"), exist_ok=True)    
     df.to_csv(os.path.join(experiment_name, "summary", "summary.csv"), index=False, sep=",")
+    print(f"Summary saved to {os.path.join(experiment_name, 'summary', 'summary.csv')}")
 
-    # Print the dataframe path
-    print(f"\n\nSummary saved to {os.path.join(experiment_name, 'summary', 'summary.csv')}")
+    # Create a table from the dataframe
+    df_table = df[["model_name", "box_preset", "val_acc"]].reset_index(drop=True)
+    df_table = df_table.pivot(index="model_name", columns="box_preset", values="val_acc")
 
-    # Print the results
-    if verbose:
-        for idx, row in df.iterrows():
-            if idx == 0:
-                print(f"{'MODEL':<20} {'BOX PRESET':<25} {'VAL ACC'}")
-                print(f"{'-----':<20} {'--------':<25} {'-----'}")
-                print(f"{row['model_name']:<20} {row['box_preset']:<25} {row['val_acc']:.4f}")
-            else:
-                print(f"{row['model_name']:<20} {row['box_preset']:<25} {row['val_acc']:.4f}")
-            
-    return df
+
+    # Save the table to the experiment directory
+    df_table.to_csv(os.path.join(experiment_name, "summary", "summary_table.csv"), index=True, sep=",")
+    print(f"Summary saved to {os.path.join(experiment_name, 'summary', 'summary_table.csv')}")
+
+
+
+        
     
 
 
@@ -152,11 +169,19 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name", type=str, default="experiments/base_experiment")
     args = parser.parse_args()
 
+    if len(args.experiment_name.split("/")) !=2:
+        print("Please provide the experiment name in the following format: experiments/<experiment_name>")
+        args.experiment_name = os.path.join("experiments", args.experiment_name)
+        print(f"Using the experiment name: {args.experiment_name}")
+
     # models = ["resnet34", "resnet50", "resnet101", "densenet121", "densenet161", "densenet169", "densenet201", 
     #           "efficientnet_b0", "efficientnet_b1", "efficientnet_b2", "efficientnet_b3"]
     # box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae"]
 
     
     # Summarize the results
-    summarize_single_experiment(experiment_name=f"{args.experiment_name}", verbose=True)
+    # summarize_single_experiment(experiment_name=f"{args.experiment_name}", verbose=True)
+
+    summarize_multiple_experiments(experiment_name=f"{args.experiment_name}", verbose=True)
+
     

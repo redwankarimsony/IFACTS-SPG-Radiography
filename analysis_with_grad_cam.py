@@ -106,8 +106,9 @@ def getPrediction(model, img_tensor):
 
 if __name__ == "__main__":
     # Define the transformations you want to apply to the images
-    # best_model_checkpoint = "experiments/base_experiment/t1-t5/resnet34/resnet34_t1-t5_epoch=956-val_acc_epoch=0.7695.ckpt"
-    best_model_checkpoint = 'experiments/augmentation_no_crop/clavicle-only/densenet161/densenet161_clavicle-only_epoch=332-val_acc_epoch=0.8314.ckpt'
+    best_model_checkpoint = "experiments/augmentation_no_crop/t1-t5/densenet161/densenet161_t1-t5_epoch=510-val_acc_epoch=0.8751.ckpt"
+    # best_model_checkpoint = 'experiments/augmentation_no_crop/clavicle-only/densenet161/densenet161_clavicle-only_epoch=332-val_acc_epoch=0.8314.ckpt'
+    # best_model_checkpoint = 'experiments/augmentation_no_crop/complete-vertebrae/densenet161/densenet161_complete-vertebrae_epoch=542-val_acc_epoch=0.8208.ckpt'
 
     # Load the model
     classifier = LightningTrainer.load_from_checkpoint(best_model_checkpoint)
@@ -119,7 +120,7 @@ if __name__ == "__main__":
     ds_train, ds_valid, dl_train, dl_valid = get_datasets(classifier.cfg)
 
     # Load a single instance from the dataset
-    data_idx = 460
+    data_idx = 1125 #470# 460
     image_torch, ground_truth_class, image_filename = ds_valid[data_idx]
     print(image_torch.shape, ground_truth_class, image_filename)
 
@@ -151,6 +152,8 @@ if __name__ == "__main__":
 
 
 
+
+
     
 
 
@@ -172,7 +175,7 @@ if __name__ == "__main__":
     # # Construct the CAM object once, and then re-use it on many images:
     cam = HiResCAM(model=model, target_layers=target_layers, use_cuda=True)
 
-    targets = [ClassifierOutputTarget(ground_truth_class)]
+    targets = [ClassifierOutputTarget(prediction)]
 
 
 
@@ -187,7 +190,9 @@ if __name__ == "__main__":
         "Max:", grayscale_cam.max())
     
 
-    cam_overlayed = overlay_cam_on_image(img, saliency_map=grayscale_cam, use_rgb=True, image_weight=0.8)
+    cam_overlayed = overlay_cam_on_image(img, saliency_map=grayscale_cam, 
+                                         use_rgb=True, 
+                                         image_weight=0.5)
 
 
 
@@ -204,23 +209,28 @@ if __name__ == "__main__":
 
 
 
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 4, 1)
+    plt.figure(figsize=(15, 10))
+    plt.subplot(1, 2, 1)
 
     plt.imshow(img) 
     plt.title("Original Image")
+    plt.axis('off')
 
-    plt.subplot(1, 4, 2)
-    plt.imshow(img_denorm)
-    plt.title("Denormalized Image")
+    # plt.subplot(1, 4, 2)
+    # plt.imshow(img_denorm)
+    # plt.title("Denormalized Image")
     
     
-    plt.subplot(1, 4, 3)
-    plt.imshow(cv2.resize(img_denorm, dsize=img.shape[0:2][::-1]))
-    plt.title("Resized \nDenormalized")
+    # plt.subplot(1, 4, 3)
+    # plt.imshow(cv2.resize(img_denorm, dsize=img.shape[0:2][::-1]))
+    # plt.title("Resized \nDenormalized")
 
-    plt.subplot(1, 4, 4)
+    plt.subplot(1, 2, 2)
     plt.imshow(cam_overlayed)
     
+    plt.title(f"Cam Overlayed\nPrediction: {prediction} Ground Truth: {ground_truth_class}")
+    plt.axis('off')
+    
     plt.tight_layout()
-    plt.savefig("denormalized_image.png")
+    
+    plt.savefig(f"{data_idx}_{orig_img_path.split('/')[-1].replace('.png','')}_{classifier.cfg.box_preset}.png")

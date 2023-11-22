@@ -3,6 +3,8 @@ experiments/*
 results/*
 .idea/*
 .ipynb_checkpoints
+verification-results/*
+visualizations/*
 
 
 # Byte-compiled / optimized / DLL files

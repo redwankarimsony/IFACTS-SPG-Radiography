@@ -65,6 +65,8 @@ class MXNetRecDataset(Dataset):
 
         return img, label, filename.strip()
 
+
+
 def benchmark_loading(dataset):
     start = time.time()
     for i in range(len(dataset)):
