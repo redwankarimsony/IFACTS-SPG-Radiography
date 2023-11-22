@@ -254,3 +254,8 @@ if __name__ == "__main__":
 
     torch.cuda.empty_cache()
     time.sleep(30)
+
+
+    # Write the confirmation that code has finished running
+    with open(os.path.join(cfg.results_dir, "summary", "done.txt"), "w") as f:
+        f.write(f"{cfg.experiment_name} {cfg.model_arch} {cfg.box_preset} done")
