@@ -5,10 +5,10 @@
 #       Graduate Researcher, iPRoBe Lab, CSE, MSU
 
 
-import os
 import os.path as osp
-import pandas as pd
 import random
+
+import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms as tf
 
@@ -91,15 +91,15 @@ def data_split(metadata_file: str, modes: list):
     df.to_excel(metadata_file.replace('.xlsx', f'_splitted.xlsx'), index=False, sheet_name='Data input information')
 
 
-class ProgressiveTrainDataset(Dataset):
+class ProgressiveBaseDataset(Dataset):
     def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
         """
         Args:
             mtdt_file: metadata file path containing the split information
-            mode: one of the modes from ['case_in_test', 'case_in_train', 'case_in_random']
+            split_mode: one of the modes from ['case_in_test', 'case_in_train', 'case_in_random']
             split: train, valid or test
             transform: transform to be applied on the images
-            bbox: one of the bounding box presets from ['t1-t5', 'complete-vertebrae', clavicle-only', 'whole']
+            box_preset: one of the bounding box presets from ['t1-t5', 'complete-vertebrae', clavicle-only', 'whole']
         """
         if not osp.exists(mtdt_file):
             raise FileNotFoundError("Metadata file not found at {}".format(mtdt_file))
@@ -114,7 +114,19 @@ class ProgressiveTrainDataset(Dataset):
         self.img_dir = osp.join(self.images_dir, self.box_preset)
 
         # Add new column to the dataframe with the image path
-        self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['IFACTS File Name']+'.png'), axis=1)
+        self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['IFACTS File Name'] + '.png'),
+                                            axis=1)
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        pass
+
+
+class ProgressiveTrainDataset(ProgressiveBaseDataset):
+    def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
+        super().__init__(images_dir, mtdt_file, split_mode, box_preset, split, transform)
 
     def __len__(self):
         return len(self.df)
@@ -124,6 +136,58 @@ class ProgressiveTrainDataset(Dataset):
         file_info = self.df.iloc[idx]
         # Get the image path
         return file_info
+
+
+class ProgressiveTestDataset(ProgressiveBaseDataset):
+    def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
+        super().__init__(images_dir, mtdt_file, split_mode, box_preset, split, transform)
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self, item):
+        pass
+
+
+def get_progressive_datasets(cfg):
+    # Load the datasets
+    ds_train = ProgressiveTrainDataset(images_dir=cfg.dataset_dir,
+                                       mtdt_file=cfg.metadata_file,
+                                       split_mode=cfg.split_mode,
+                                       box_preset=cfg.box_preset,
+                                       split='train',
+                                       transform=cfg.tfms_train)
+    ds_valid = ProgressiveTrainDataset(images_dir=cfg.dataset_dir,
+                                       mtdt_file=cfg.metadata_file,
+                                       split_mode=cfg.split_mode,
+                                       box_preset=cfg.box_preset,
+                                       split='valid',
+                                       transform=cfg.tfms_valid)
+    ds_test = ProgressiveTrainDataset(images_dir=cfg.dataset_dir,
+                                      mtdt_file=cfg.metadata_file,
+                                      split_mode=cfg.split_mode,
+                                      box_preset=cfg.box_preset,
+                                      split='test',
+                                      transform=cfg.tfms_valid)
+
+    # Load the dataloaders
+    dl_train = DataLoader(ds_train,
+                          batch_size=cfg.batch_size,
+                          shuffle=True,
+                          num_workers=cfg.num_workers,
+                          pin_memory=True)
+    dl_valid = DataLoader(ds_valid,
+                          batch_size=cfg.batch_size,
+                          shuffle=False,
+                          num_workers=cfg.num_workers,
+                          pin_memory=True)
+    dl_test = DataLoader(ds_test,
+                         batch_size=cfg.batch_size,
+                         shuffle=False,
+                         num_workers=cfg.num_workers,
+                         pin_memory=True)
+
+    return ds_train, ds_valid, ds_test, dl_train, dl_valid, dl_test
 
 
 if __name__ == "__main__":
@@ -146,9 +210,7 @@ if __name__ == "__main__":
     ds = ProgressiveTrainDataset(images_dir="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped-combined",
                                  mtdt_file="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/IFACTS MASTER_github_splitted.xlsx",
                                  split_mode='case_in_test',
-                                    box_preset='t1-t5',
-                                    split='train',
-                                    transform=tf.Compose([tf.ToTensor()]))
+                                 box_preset='t1-t5',
+                                 split='train',
+                                 transform=tf.Compose([tf.ToTensor()]))
     print(len(ds))
-
-
