@@ -114,7 +114,7 @@ class ProgressiveTrainDataset(Dataset):
         self.img_dir = osp.join(self.images_dir, self.box_preset)
 
         # Add new column to the dataframe with the image path
-        self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['Image Name']+'.png'), axis=1)
+        self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['IFACTS File Name    ']+'.png'), axis=1)
 
     def __len__(self):
         return len(self.df)
