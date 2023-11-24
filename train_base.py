@@ -26,19 +26,18 @@ import numpy as np
 torch.set_float32_matmul_precision("high")
 
 
-
 class LightningTrainer(pl.LightningModule):
     def __init__(self, cfg):
         super(LightningTrainer, self).__init__()
         self.save_hyperparameters()
-        
+
         self.cfg = cfg
 
         # Model related attributes
         self.model = self._initialize_model()
         self.loss_func = nn.CrossEntropyLoss()
         self.softmax = nn.Softmax(dim=1)
-        
+
         # Metrics related attributes
         num_classes = self.cfg.num_classes
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
@@ -48,22 +47,20 @@ class LightningTrainer(pl.LightningModule):
         """Initialize the model based on the given configuration."""
         return get_model(self.cfg)
 
-
-
     def training_step(self, batch, batch_idx):
         # Extract data from batch
         X, y, codes = batch
-        
+
         # Forward pass
         y_hat = self.model(X)
         preds = self.softmax(y_hat)
-        
+
         # Compute loss
         loss = self.loss_func(preds, y)
-        
+
         # Log metrics and results
         self._log_training_metrics(preds, y, loss, len(X))
-        
+
         return loss
 
     def _log_training_metrics(self, preds, y, loss, batch_size):
@@ -75,15 +72,15 @@ class LightningTrainer(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # Extract data from batch
         X, y, codes = batch
-        
+
         # Forward pass and compute loss
         y_hat = self.model(X)
         preds = self.softmax(y_hat)
         loss = self.loss_func(preds, y)
-        
+
         # Log metrics and results
         self._log_validation_metrics(preds, y, loss, len(X))
-        
+
         return loss
 
     def _log_validation_metrics(self, preds, y, loss, batch_size):
@@ -91,7 +88,6 @@ class LightningTrainer(pl.LightningModule):
         self.val_acc(preds, y)
         self.log("val_loss", loss, batch_size=batch_size, sync_dist=True)
         self.log("val_acc_step", self.val_acc, batch_size=batch_size, sync_dist=True)
-
 
     def configure_optimizers(self):
         """Define the optimizer for the model."""
@@ -114,7 +110,6 @@ def get_datasets(cfg):
     ds_path_train = f"{cfg.dataset_dir}/train.rec"
     ds_path_valid = f"{cfg.dataset_dir}/valid.rec"
 
-    
     if cfg.use_mxrecord:
         # Create an instance of the MXNetRecDataset
         ds_train = MXNetRecDataset(rec_path=ds_path_train, transform=cfg.tfms_train)
@@ -125,7 +120,6 @@ def get_datasets(cfg):
         # ds_valid = XrayDataset(cfg, split="valid", transform=cfg.tfms_valid)
         pass
 
-
     # Create the dataloaders for train and valid
     dl_train = DataLoader(ds_train,
                           batch_size=cfg.batch_size,
@@ -133,16 +127,15 @@ def get_datasets(cfg):
                           num_workers=cfg.num_workers,
                           pin_memory=cfg.pin_memory,
                           persistent_workers=True)
-    
-    dl_valid = DataLoader(ds_valid,
-                            batch_size=cfg.batch_size,
-                            shuffle=False,
-                            num_workers=cfg.num_workers,
-                            pin_memory=cfg.pin_memory,
-                            persistent_workers=True)
-    
-    return ds_train, ds_valid, dl_train, dl_valid
 
+    dl_valid = DataLoader(ds_valid,
+                          batch_size=cfg.batch_size,
+                          shuffle=False,
+                          num_workers=cfg.num_workers,
+                          pin_memory=cfg.pin_memory,
+                          persistent_workers=True)
+
+    return ds_train, ds_valid, dl_train, dl_valid
 
 
 def get_logger(cfg):
@@ -150,7 +143,6 @@ def get_logger(cfg):
                                        name=f"{cfg.box_preset}",
                                        version=cfg.model_arch)
     return logger
-
 
 
 def get_callbacks(cfg):
@@ -164,12 +156,10 @@ def get_callbacks(cfg):
                                           monitor="val_acc_epoch",
                                           mode="max",
                                           dirpath=os.path.join(cfg.results_dir, cfg.box_preset, cfg.model_arch),
-                                          
-                                          filename=cfg.model_arch+"_"+cfg.box_preset + "_{epoch:02d}-{val_acc_epoch:.4f}",
+
+                                          filename=cfg.model_arch + "_" + cfg.box_preset + "_{epoch:02d}-{val_acc_epoch:.4f}",
                                           )
     return [early_stopper_callback, checkpoint_callback]
-
-
 
 
 def main(cfg):
@@ -187,25 +177,22 @@ def main(cfg):
 
     # Load the trainer
     trainer = pl.Trainer(limit_train_batches=cfg.limit_train_batches,
-                            max_epochs=cfg.max_epoch,
-                            accelerator="gpu",
-                            devices=cfg.cuda_devices,
-                            log_every_n_steps=50,
-                            default_root_dir=os.path.join(cfg.results_dir,
-                                                            cfg.box_preset,
-                                                            cfg.model_arch),
-                            logger=logger,
-                            callbacks=callbacks,
-                            gradient_clip_val=0.5,
-                            gradient_clip_algorithm="value")
-    
+                         max_epochs=cfg.max_epoch,
+                         accelerator="gpu",
+                         devices=cfg.cuda_devices,
+                         log_every_n_steps=50,
+                         default_root_dir=os.path.join(cfg.results_dir,
+                                                       cfg.box_preset,
+                                                       cfg.model_arch),
+                         logger=logger,
+                         callbacks=callbacks,
+                         gradient_clip_val=0.5,
+                         gradient_clip_algorithm="value")
+
     # Fit the model
     trainer.fit(model=classifier,
                 train_dataloaders=dl_train,
                 val_dataloaders=dl_valid)
-
-
-
 
 
 if __name__ == "__main__":
@@ -216,45 +203,41 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='IFACTS Experiment',
                                      description='What the program does',
                                      epilog='Text at the bottom of help')
-    parser.add_argument("--model_arch", 
-                        type=str, 
+    parser.add_argument("--model_arch",
+                        type=str,
                         default="resnet34",
                         help="Select the model selection key.\nFor more look for cfr.model_arch in models.py file")
-    
-    parser.add_argument("--gpu", 
-                        type=int, 
+
+    parser.add_argument("--gpu",
+                        type=int,
                         default=get_gpu_with_least_memory_over_period(20),
                         help="Select which gpu you would like to use")
-    
-    parser.add_argument("--box_preset", 
-                        type=str, 
-                        default='t1-t5', 
+
+    parser.add_argument("--box_preset",
+                        type=str,
+                        default='t1-t5',
                         choices={'t1-t5',
-                                 'clavicle-only', 
-                                 'complete-vertebrae', 
+                                 'clavicle-only',
+                                 'complete-vertebrae',
                                  'whole'},
                         help="Select the bounding box configuration")
-    
+
     parser.add_argument("--experiment_name",
                         type=str,
                         default="base_experiment",
                         help="Select the experiment name")
-    
-    
-    
+
     args = parser.parse_args()
 
-    print(f'Lowest GPU usage: {args.gpu}')  
+    print(f'Lowest GPU usage: {args.gpu}')
 
     cfg = ConfigClass(**vars(args))
     print(cfg)
 
     main(cfg)
 
-
     torch.cuda.empty_cache()
     time.sleep(30)
-
 
     # Write the confirmation that code has finished running
     with open(os.path.join(cfg.results_dir, "summary", "done.txt"), "w") as f:
