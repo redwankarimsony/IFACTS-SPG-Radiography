@@ -122,16 +122,26 @@ class ProgressiveTrainDataset(Dataset):
 
 if __name__ == "__main__":
 
-    # Testing for the data_split function
-    dataset_dir = "/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset"
-    images_dir = osp.join(dataset_dir, "cropped-combined")
-    metadata_file = osp.join(dataset_dir, "IFACTS MASTER_github.xlsx")
-    split_modes = ['case_in_test', 'case_in_train', 'case_in_random']
+    # # Testing for the data_split function
+    # dataset_dir = "/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset"
+    # images_dir = osp.join(dataset_dir, "cropped-combined")
+    # metadata_file = osp.join(dataset_dir, "IFACTS MASTER_github.xlsx")
+    # split_modes = ['case_in_test', 'case_in_train', 'case_in_random']
+    #
+    # if os.path.exists(metadata_file.replace('.xlsx', f'_splitted.xlsx')):
+    #     print("Split already done")
+    # else:
+    #     data_split(metadata_file=metadata_file, modes=split_modes)
+    #     print("Split done")
 
-    if os.path.exists(metadata_file.replace('.xlsx', f'_splitted.xlsx')):
-        print("Split already done")
-    else:
-        data_split(metadata_file=metadata_file, modes=split_modes)
-        print("Split done")
+
+    # Test Loading the dataset
+    ds = ProgressiveTrainDataset(images_dir="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped-combined",
+                                 mtdt_file="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/IFACTS MASTER_github_splitted.xlsx",
+                                 mode='case_in_test',
+                                 split='train',
+                                 bbox='t1-t5',
+                                 transform=tf.ToTensor())
+
 
 
