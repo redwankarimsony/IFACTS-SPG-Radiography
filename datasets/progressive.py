@@ -34,7 +34,7 @@ def print_split_summary(df, mode):
     print("\n\n")
 
 
-def data_split(metadata_file: str, modes:list):
+def data_split(metadata_file: str, modes: list):
     """
 
     Args:
@@ -92,7 +92,7 @@ def data_split(metadata_file: str, modes:list):
 
 
 class ProgressiveTrainDataset(Dataset):
-    def __init__(self, images_dir, mtdt_file, mode, split, bbox, transform=None):
+    def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
         """
         Args:
             mtdt_file: metadata file path containing the split information
@@ -108,8 +108,13 @@ class ProgressiveTrainDataset(Dataset):
         elif mtdt_file.endswith(".xlsx"):
             self.df = pd.read_excel(mtdt_file, sheet_name='Data input information')
         self.images_dir = images_dir
-        self.df = self.df[self.df[mode] == split].reset_index(drop=True)
+        self.df = self.df[self.df[split_mode] == split].reset_index(drop=True)
         self.transform = transform
+        self.box_preset = box_preset
+        self.img_dir = osp.join(self.images_dir, self.box_preset)
+
+        # Add new column to the dataframe with the image path
+        self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['Image Name']+'.png'), axis=1)
 
     def __len__(self):
         return len(self.df)
@@ -118,10 +123,10 @@ class ProgressiveTrainDataset(Dataset):
         # Get the row of the dataframe
         file_info = self.df.iloc[idx]
         # Get the image path
+        return file_info
 
 
 if __name__ == "__main__":
-
     # # Testing for the data_split function
     # dataset_dir = "/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset"
     # images_dir = osp.join(dataset_dir, "cropped-combined")
@@ -134,14 +139,16 @@ if __name__ == "__main__":
     #     data_split(metadata_file=metadata_file, modes=split_modes)
     #     print("Split done")
 
+    box_preset = 't1-t5'
+    split_mode = 'case_in_test'
 
     # Test Loading the dataset
     ds = ProgressiveTrainDataset(images_dir="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped-combined",
                                  mtdt_file="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/IFACTS MASTER_github_splitted.xlsx",
-                                 mode='case_in_test',
-                                 split='train',
-                                 bbox='t1-t5',
-                                 transform=tf.ToTensor())
-
+                                 split_mode='case_in_test',
+                                    box_preset='t1-t5',
+                                    split='train',
+                                    transform=tf.Compose([tf.ToTensor()]))
+    print(len(ds))
 
 
