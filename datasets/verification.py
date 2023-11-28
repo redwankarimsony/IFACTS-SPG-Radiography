@@ -157,7 +157,7 @@ class ChextXrayVerificationDataset(Dataset):
         
         return img1, img2, verification_label, img_path1, img_path2
     
-    
+
 
 
 

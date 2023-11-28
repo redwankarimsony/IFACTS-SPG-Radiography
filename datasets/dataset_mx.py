@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 class MXNetRecDataset(Dataset):
-    def __init__(self, rec_path, transform=None):
+    def __init__(self, rec_path,  transform=None):
         self.rec_path = rec_path
         self.idx_path = rec_path[:-4] + ".idx"
         self.lst_path = rec_path[:-4] + ".lst"

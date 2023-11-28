@@ -1,4 +1,3 @@
-
 # config/config.py
 # Created by sonymd at 2/5/23
 # Mail: sonymd@msu.edu

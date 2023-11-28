@@ -11,6 +11,7 @@ import os.path as osp
 
 import cv2
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,7 +19,6 @@ import pandas as pd
 import torch
 import torchvision.transforms as tf
 from torch.utils.data import Dataset, DataLoader
-
 
 torch.manual_seed(1455)
 plt.rcParams["font.size"] = 12
@@ -54,7 +54,6 @@ class XrayDataset(Dataset):
         H, W = img.shape
         # print(img_path)
 
-
         if cfg.box_preset != 3:
             _, x, y, w, h = df.iloc[cfg.box_preset, :]
         else:
@@ -73,7 +72,7 @@ class XrayDataset(Dataset):
                                                   take_square=True)
         # print("take square shape:", xmin, ymin, xmax, ymax)
         img_final_masked = img_stacked[:, ymin:ymax, xmin:xmax]
-        
+
         img_tensor = torch.tensor(img_final_masked) / 255.
         # print(img_tensor.shape)
         if self.transform:
@@ -173,7 +172,7 @@ class XrayDataset(Dataset):
 
 
 def split_dataset(cfg):
-    annot_dir=cfg.annot_dir
+    annot_dir = cfg.annot_dir
     all_files, label_files, ID_labels = os.listdir(annot_dir), [], {}
     train_files, valid_files, _IDs = [], [], set({})
 
@@ -243,6 +242,7 @@ def split_dataset(cfg):
         for idx, ID in enumerate(_IDs):
             print(f"{ID}, {idx}", file=fp)
 
+
 def get_transforms(cfg):
     transfroms = torch.nn.Sequential(
         tf.Resize(512),
@@ -270,7 +270,6 @@ def test_dataset(cfg):
         plt.title(id)
         plt.axis('off')
     plt.show()
-
 
 # if __name__ == "__main__":
 #     # split_dataset()

@@ -21,7 +21,7 @@ class ConfigClass:
             "efficientnet_b2", "efficientnet_b3", "efficientnet_b4",
             "efficientnet_b5", "efficientnet_b6", "efficientnet_b7",
             "vit_large_r50_s32_384", "vit_large_patch32_384", "swin_t",
-            "swin_s", "swin_b" ]
+            "swin_s", "swin_b"]
         
         self.box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae", "whole"]
                 

@@ -13,100 +13,97 @@ from torchvision.models import resnet50, ResNet50_Weights
 from torchvision.models import efficientnet
 
 
-def get_fr_model(backbone: str, head: str, embedding_size: int, class_num: int, m: float, t_alpha: float, h: float,
-                 s: float):
-    """Builds the model based on the backbone and head type
-
-    Args:
-        backbone (str): The backbone type
-        head (str): The head type
-        embedding_size (int): The embedding size
-        class_num (int): The number of classes
-        m (float): The margin value
-        t_alpha (float): The alpha value for the batch mean and std
-        h (float): The h value for the margin scaler
-        s (float): The s value for the cosine scaler
-
-    Returns:
-        [type]: [description]
-    """
-
-    model = get_backbone(backbone)
-    head = build_head(head, embedding_size, class_num, m, t_alpha, h, s)
-    return model, head
+def build_model(model_arch, embedding_size):
+    model = ConvModel(model_arch, embedding_size)
+    return model
 
 
-def get_backbone(cfg):
-    if cfg.model_arch.startswith("resnet"):
-        if cfg.model_arch == "resnet34":
+class ConvModel(nn.Module):
+    def __init__(self, model_arch, embedding_size):
+        super(ConvModel, self).__init__()
+
+        self.model = _build_backbone(model_arch, embedding_size)
+
+    def forward(self, x):
+        x = self.model(x)
+
+        norm = torch.norm(x, 2, 1, True)
+        output = torch.div(x, norm)
+
+        return output, norm
+
+
+def _build_backbone(model_arch, embedding_size):
+    if model_arch.startswith("resnet"):
+        if model_arch == "resnet34":
             model = resnet34(weights=ResNet34_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "resnet50":
+        elif model_arch == "resnet50":
             model = resnet50(weights=ResNet50_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "resnet101":
+        elif model_arch == "resnet101":
             model = resnet101(weights=ResNet101_Weights.DEFAULT, progress=True)
-
-            # Modify the model head
-            model.fc = nn.Linear(model.fc.in_features, cfg.embedding_size, bias=True)
-
         else:
             model = None
-            raise ValueError(f"No ResNet model found with key {cfg.model_arch}")
+            raise ValueError(f"No ResNet model found with key {model_arch}")
 
+        # Modify the model head
+        model.fc = nn.Linear(model.fc.in_features, embedding_size, bias=True)
+        print(embedding_size)
         return model
 
-    elif cfg.model_arch.startswith("densenet"):
-        if cfg.model_arch == "densenet121":
+    elif model_arch.startswith("densenet"):
+        if model_arch == "densenet121":
             model = densenet121(DenseNet121_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "densenet161":
+        elif model_arch == "densenet161":
             model = densenet161(DenseNet161_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "densenet169":
+        elif model_arch == "densenet169":
             model = densenet169(DenseNet169_Weights.IMAGENET1K_V1, progress=True)
-        elif cfg.model_arch == "densenet201":
+        elif model_arch == "densenet201":
             model = densenet201(DenseNet201_Weights.IMAGENET1K_V1, progress=True)
         else:
             model = None
-            raise ValueError(f"No model found with key {cfg.model_arch}")
+            raise ValueError(f"No model found with key {model_arch}")
 
         # Modify the model head
-        model.classifier = nn.Linear(model.classifier.in_features, cfg.embedding_size, bias=True)
+        model.classifier = nn.Linear(model.classifier.in_features, embedding_size, bias=True)
         return model
 
-    elif cfg.model_arch.startswith("efficientnet"):
-        if cfg.model_arch == "efficientnet_b0":
+    elif model_arch.startswith("efficientnet"):
+        if model_arch == "efficientnet_b0":
             model = efficientnet.efficientnet_b0(efficientnet.EfficientNet_B0_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b1":
+        elif model_arch == "efficientnet_b1":
             model = efficientnet.efficientnet_b1(efficientnet.EfficientNet_B1_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b2":
+        elif model_arch == "efficientnet_b2":
             model = efficientnet.efficientnet_b2(efficientnet.EfficientNet_B2_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b3":
+        elif model_arch == "efficientnet_b3":
             model = efficientnet.efficientnet_b3(efficientnet.EfficientNet_B3_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b4":
+        elif model_arch == "efficientnet_b4":
             model = efficientnet.efficientnet_b4(efficientnet.EfficientNet_B4_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b5":
+        elif model_arch == "efficientnet_b5":
             model = efficientnet.efficientnet_b5(efficientnet.EfficientNet_B5_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b6":
+        elif model_arch == "efficientnet_b6":
             model = efficientnet.efficientnet_b6(efficientnet.EfficientNet_B6_Weights.DEFAULT, progress=True)
-        elif cfg.model_arch == "efficientnet_b7":
+        elif model_arch == "efficientnet_b7":
             model = efficientnet.efficientnet_b7(efficientnet.EfficientNet_B7_Weights.DEFAULT, progress=True)
         else:
             model = None
-            raise ValueError(f"No model found with key {cfg.model_arch}")
+            raise ValueError(f"No model found with key {model_arch}")
 
         # Modify the model head
-        model._fc = nn.Linear(model._fc.in_features, cfg.embedding_size, bias=True)
+        # model._fc = nn.Linear(model._fc.in_features, embedding_size, bias=True)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, embedding_size, bias=True)
         return model
 
     else:
-        raise ValueError(f"No model found with key {cfg.model_arch}")
+        raise ValueError(f"No model found with key {model_arch}")
 
 
-def build_head(head_type, embedding_size, class_num, m, t_alpha, h, s, ):
+def build_head(head_type, embedding_size, class_num):
     if head_type == 'adaface':
-        head = AdaFace(embedding_size=embedding_size, classnum=class_num, m=m, h=h, s=s, t_alpha=t_alpha, )
+        head = AdaFace(embedding_size=embedding_size, classnum=class_num)
     elif head_type == 'arcface':
-        head = ArcFace(embedding_size=embedding_size, classnum=class_num, m=m, s=s, )
+        head = ArcFace(embedding_size=embedding_size, classnum=class_num)
     elif head_type == 'cosface':
-        head = CosFace(embedding_size=embedding_size, classnum=class_num, m=m, s=s, )
+        head = CosFace(embedding_size=embedding_size, classnum=class_num)
     else:
         raise ValueError('not a correct head type', head_type)
     return head
