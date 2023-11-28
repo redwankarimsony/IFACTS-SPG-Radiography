@@ -5,7 +5,6 @@
 # Graduate Researcher, iPRoBe Lab, CSE, MSU
 
 
-
 import os
 import torch
 import pandas as pd
@@ -13,9 +12,7 @@ import argparse
 from tqdm import tqdm
 
 
-
-
-def get_the_best_model(checkpoint_dir, full_path = False, ext=".ckpt"):
+def get_the_best_model(checkpoint_dir, full_path=False, ext=".ckpt"):
     """
     Returns the file path of the best model in the given checkpoint directory
 
@@ -33,14 +30,12 @@ def get_the_best_model(checkpoint_dir, full_path = False, ext=".ckpt"):
     ckpts = [x for x in files if x.endswith(ext)]
     # Return the best model
     if full_path:
-        return os.path.join(checkpoint_dir, max(ckpts, key= lambda x: float(x.split("=")[-1].split(".")[0])))
+        return os.path.join(checkpoint_dir, max(ckpts, key=lambda x: float(x.split("=")[-1].split(".")[0])))
     else:
-        return  max(ckpts, key= lambda x: float(x.split("=")[-1].split(".")[0]))
+        return max(ckpts, key=lambda x: float(x.split("=")[-1].split(".")[0]))
 
 
-
-
-def generate_train_summary(experiment_name:str, box_presets:list, model_names:list):
+def generate_train_summary(experiment_name: str, box_presets: list, model_names: list):
     """
     Generates a summary of the training results for the given experiment name, box presets and model names
     """
@@ -56,9 +51,7 @@ def generate_train_summary(experiment_name:str, box_presets:list, model_names:li
     return all_models
 
 
-    
-
-def summarize_single_experiment(experiment_name:str, verbose=True):
+def summarize_single_experiment(results_dir: str, experiment_name: str, verbose=True):
     """Given the location of the experiment directory, this function summarizes the results of the experiment
 
     Args:
@@ -68,20 +61,19 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
         _type_: the summary of the best model for each box_preset and model_name
     """
 
-
     all_models = []
-    
+    experiment_dir = os.path.join(results_dir, experiment_name)
     # List all the box presets
-    box_presets = [x for x in os.listdir(experiment_name) if os.path.isdir(os.path.join(experiment_name, x))]   
+    box_presets = [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))]
 
     for box_preset in box_presets:
         if box_preset == "summary":
             continue
         # List all the models for the given box preset
-        model_names = os.listdir(os.path.join(experiment_name, box_preset))
+        model_names = os.listdir(os.path.join(experiment_dir, box_preset))
 
         for model_name in model_names:
-            checkpoint_dir = os.path.join(experiment_name, box_preset, model_name)
+            checkpoint_dir = os.path.join(experiment_dir, box_preset, model_name)
             try:
                 best_model = get_the_best_model(checkpoint_dir=checkpoint_dir)
                 all_models.append(best_model)
@@ -98,41 +90,34 @@ def summarize_single_experiment(experiment_name:str, verbose=True):
         if parts[0].startswith("efficientnet"):
             model_name = parts[0] + "_" + parts[1]
             box_preset = parts[2]
-        
+
         # Otherwise, the model name is the first part
         else:
             model_name = parts[0]
             box_preset = parts[1]
 
         # Find the validation accuracy:
-        val_acc  = float(parts[-1].split("=")[-1].replace(".ckpt", ""))
+        val_acc = float(parts[-1].split("=")[-1].replace(".ckpt", ""))
 
         # Find num of parameters
         filepath = os.path.join(experiment_name, box_preset, model_name, filepath)
-        
+
         state_dict = torch.load(filepath)['state_dict']
-        
+
         # Calculate the total number of parameters
-        total_params = round(sum(p.numel() for p in state_dict.values())/(1e6), 2) 
-
-        
-        
-        
-
+        total_params = round(sum(p.numel() for p in state_dict.values()) / (1e6), 2)
 
         # Append the results to the data list
-        data.append({"model_name": model_name, "num_paramsM": total_params, "box_preset": box_preset, "val_acc": val_acc, "saved_model": filepath})
+        data.append(
+            {"model_name": model_name, "num_paramsM": total_params, "box_preset": box_preset, "val_acc": val_acc,
+             "saved_model": filepath})
 
     return data
 
 
-
-
-def summarize_multiple_experiments(experiment_name, verbose=True):
-
-    data = summarize_single_experiment(experiment_name=experiment_name, verbose=verbose)
-
-    
+def summarize_multiple_experiments(results_dir, experiment_name, verbose=True):
+    data = summarize_single_experiment(results_dir=results_dir,
+                                       experiment_name=experiment_name, verbose=verbose)
 
     # Create a dataframe from the results
     df = pd.DataFrame(data)
@@ -141,7 +126,7 @@ def summarize_multiple_experiments(experiment_name, verbose=True):
     df = df.sort_values(by="val_acc", ascending=False).reset_index(drop=True)
 
     # Save the dataframe to the experiment directory
-    os.makedirs(os.path.join(experiment_name, "summary"), exist_ok=True)    
+    os.makedirs(os.path.join(experiment_name, "summary"), exist_ok=True)
     df.to_csv(os.path.join(experiment_name, "summary", "summary.csv"), index=False, sep=",")
     print(f"Summary saved to {os.path.join(experiment_name, 'summary', 'summary.csv')}")
 
@@ -149,39 +134,31 @@ def summarize_multiple_experiments(experiment_name, verbose=True):
     df_table = df[["model_name", "box_preset", "val_acc"]].reset_index(drop=True)
     df_table = df_table.pivot(index="model_name", columns="box_preset", values="val_acc")
 
-
     # Save the table to the experiment directory
     df_table.to_csv(os.path.join(experiment_name, "summary", "summary_table.csv"), index=True, sep=",")
     print(f"Summary saved to {os.path.join(experiment_name, 'summary', 'summary_table.csv')}")
-
-
-
-        
-    
-
-
 
 
 if __name__ == "__main__":
 
     # Parse the arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment_name", type=str, default="experiments/base_experiment")
+    parser.add_argument("--experiment_name", type=str, default="base_experiment")
+    parser.add_argument("--results_dir", type=str, default="/research/iprobe-sonymd/Rad-Experiments")
     args = parser.parse_args()
 
-    if len(args.experiment_name.split("/")) !=2:
+    if len(args.experiment_name.split("/")) != 2:
         print("Please provide the experiment name in the following format: experiments/<experiment_name>")
-        args.experiment_name = os.path.join("experiments", args.experiment_name)
+        args.experiment_name = os.path.join(args.results_dir, args.experiment_name)
         print(f"Using the experiment name: {args.experiment_name}")
 
     # models = ["resnet34", "resnet50", "resnet101", "densenet121", "densenet161", "densenet169", "densenet201", 
     #           "efficientnet_b0", "efficientnet_b1", "efficientnet_b2", "efficientnet_b3"]
     # box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae"]
 
-    
     # Summarize the results
     # summarize_single_experiment(experiment_name=f"{args.experiment_name}", verbose=True)
 
-    summarize_multiple_experiments(experiment_name=f"{args.experiment_name}", verbose=True)
-
-    
+    summarize_multiple_experiments(results_dir=args.results_dir,
+                                   experiment_name=args.experiment_name,
+                                   verbose=True)

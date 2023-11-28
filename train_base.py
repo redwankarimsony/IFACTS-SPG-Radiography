@@ -106,7 +106,11 @@ class LightningTrainer(pl.LightningModule):
 
 
 def get_datasets(cfg):
-    # Define the dataset paths
+
+    # Recheck the dataset paths at the the inference time too
+    cfg.resetup_dataset_root()
+
+    # Get the dataset paths
     ds_path_train = f"{cfg.dataset_dir}/train.rec"
     ds_path_valid = f"{cfg.dataset_dir}/valid.rec"
 

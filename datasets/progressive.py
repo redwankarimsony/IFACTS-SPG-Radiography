@@ -173,7 +173,7 @@ class ProgressiveValidDataset(ProgressiveBaseDataset):
             img = self.transform(img)
         label = self.class2idx[file_info['ID']]
 
-        return img, label #  file_name, dict(file_info) 
+        return img, label #  file_name, dict(file_info)
 
 
 class ProgressiveTestDataset(ProgressiveBaseDataset):

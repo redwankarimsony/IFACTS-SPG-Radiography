@@ -70,15 +70,16 @@ class ConfigClass:
 
 
     def _setup_dataset_parameters(self):
-        dir_pebble7 = "/localscratch2/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
-        dir_pebble6 = "/scratch1/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
-
-        if os.path.exists(dir_pebble7):
-            self.dataset_root = dir_pebble7
-        else:
-            self.dataset_root = dir_pebble6
-
-        self.dataset_dir = os.path.join(self.dataset_root, self.box_preset)
+        # dir_pebble7 = "/localscratch2/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
+        # dir_pebble6 = "/scratch1/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
+        #
+        # if os.path.exists(dir_pebble7):
+        #     self.dataset_root = dir_pebble7
+        # else:
+        #     self.dataset_root = dir_pebble6
+        #
+        # self.dataset_dir = os.path.join(self.dataset_root, self.box_preset)
+        self.resetup_dataset_root()
         self.use_mxrecord = True
         self.width = 512
         self.height = 512
@@ -93,6 +94,19 @@ class ConfigClass:
         self.limit_train_batches = 250
         self.max_epoch = 1200
         self.learning_rate = 1e-4
+
+    def resetup_dataset_root(self):
+        dir_pebble7 = "/localscratch2/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
+        dir_pebble6 = "/scratch1/sonymd/MSU-SPG-Radiography-Dataset/cropped_images"
+
+        if os.path.exists(dir_pebble7):
+            self.dataset_root = dir_pebble7
+        else:
+            self.dataset_root = dir_pebble6
+
+        self.dataset_dir = os.path.join(self.dataset_root, self.box_preset)
+
+
 
 
     def _setup_data_transformations(self):
