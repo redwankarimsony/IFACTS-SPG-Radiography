@@ -29,7 +29,7 @@ class ConfigClass:
         self.box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae", "whole"]
         self.split_modes = ["case_in_test", "case_in_train", "case_in_random"]
         self.loss_heads = ["arcface", "cosface", "adaface", 'softmax']
-        self.embedding_size = 512 
+        self.embedding_size = 512
 
 
         # Basic run parameters

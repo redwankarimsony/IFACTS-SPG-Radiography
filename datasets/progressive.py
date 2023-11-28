@@ -11,6 +11,7 @@ import random
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms as tf
+from PIL import Image
 
 random.seed(1455)
 
@@ -111,7 +112,7 @@ class ProgressiveBaseDataset(Dataset):
         self.df = self.df[self.df[split_mode] == split].reset_index(drop=True)
         self.transform = transform
         self.box_preset = box_preset
-        self.img_dir = osp.join(self.images_dir, self.box_preset)
+        self.img_dir = osp.join(self.images_dir)
 
         # Add new column to the dataframe with the image path
         self.df['img_path'] = self.df.apply(lambda row: osp.join(self.img_dir, row['IFACTS File Name'] + '.png'),
@@ -128,14 +129,51 @@ class ProgressiveTrainDataset(ProgressiveBaseDataset):
     def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
         super().__init__(images_dir, mtdt_file, split_mode, box_preset, split, transform)
 
+        self.classes = sorted(self.df['ID'].unique())
+
+        self.class2idx = {cls: idx for idx, cls in enumerate(self.classes)}
+        self.idx2class = {idx: cls for idx, cls in enumerate(self.classes)}
+
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, idx):
         # Get the row of the dataframe
         file_info = self.df.iloc[idx]
-        # Get the image path
-        return file_info
+        file_name = file_info['IFACTS File Name']
+        img = Image.open(file_info['img_path']).convert('RGB')
+
+        if self.transform:
+            img = self.transform(img)
+
+        label = self.class2idx[file_info['ID']]
+        return img, label #, file_name, dict(file_info)
+
+
+class ProgressiveValidDataset(ProgressiveBaseDataset):
+    def __init__(self, images_dir, mtdt_file, split_mode, box_preset, split, transform=None):
+        super().__init__(images_dir, mtdt_file, split_mode, box_preset, split, transform)
+
+        self.classes = sorted(self.df['ID'].unique())
+
+        self.class2idx = {cls: idx for idx, cls in enumerate(self.classes)}
+        self.idx2class = {idx: cls for idx, cls in enumerate(self.classes)}
+
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        # Get the row of the dataframe
+        file_info = self.df.iloc[idx]
+        file_name = file_info['IFACTS File Name']
+        img = Image.open(file_info['img_path']).convert('RGB')
+
+        if self.transform:
+            img = self.transform(img)
+        label = self.class2idx[file_info['ID']]
+
+        return img, label #  file_name, dict(file_info) 
 
 
 class ProgressiveTestDataset(ProgressiveBaseDataset):
@@ -143,10 +181,10 @@ class ProgressiveTestDataset(ProgressiveBaseDataset):
         super().__init__(images_dir, mtdt_file, split_mode, box_preset, split, transform)
 
     def __len__(self):
-        pass
+        1
 
     def __getitem__(self, item):
-        pass
+        return 1, 2
 
 
 def get_progressive_datasets(cfg):
@@ -206,11 +244,32 @@ if __name__ == "__main__":
     box_preset = 't1-t5'
     split_mode = 'case_in_test'
 
+    # ImageNet statistics as default
+    stat_mean = [0.485, 0.456, 0.406]
+    stat_std = [0.229, 0.224, 0.225]
+
+    tfms_train = tf.Compose([
+        tf.ToTensor(),
+        tf.Resize((512, 512)),
+        tf.RandomRotation(degrees=15),
+        tf.RandomPerspective(distortion_scale=0.2, p=0.3),
+        tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
+        tf.Normalize(mean=stat_mean, std=stat_std)
+    ])
+
+    tfms_valid = tf.Compose([
+        tf.ToTensor(),
+        tf.Resize((512, 512)),
+        tf.Normalize(mean=stat_mean, std=stat_std)
+    ])
+
     # Test Loading the dataset
     ds = ProgressiveTrainDataset(images_dir="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped-combined",
                                  mtdt_file="/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/IFACTS MASTER_github_splitted.xlsx",
                                  split_mode='case_in_test',
                                  box_preset='t1-t5',
-                                 split='train',
-                                 transform=tf.Compose([tf.ToTensor()]))
+                                 split='test',
+                                 transform=tfms_train)
     print(len(ds))
+
+    print(ds[0]["img_path"])
