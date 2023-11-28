@@ -180,7 +180,7 @@ def main(cfg):
 if __name__ == "__main__":
     """ 
     To run this script:
-        python train.py --model_arch resnet34 --gpu 7 --box_preset 3
+        python train_progressive.py --model_arch efficientnet_b2 --box_preset t1-t5  --split_mode case_in_random
     """
 
     parser = argparse.ArgumentParser(prog='IFACTS Experiment',
@@ -211,7 +211,7 @@ if __name__ == "__main__":
                         help="Select the experiment name")
 
     parser.add_argument("--split_mode", type=str, default="case_in_test",
-                        choices={"case_in_test", "case_in_test", "case_in_random"})
+                        choices={"case_in_test", "case_in_train", "case_in_random"})
 
     args = parser.parse_args()
     print(f'Lowest GPU usage: {args.gpu}')

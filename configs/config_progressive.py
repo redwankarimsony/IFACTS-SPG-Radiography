@@ -14,9 +14,9 @@ class ConfigClass:
                  loss_head="adaface",
                  box_preset="t1-t5",
                  gpu=7,
-                 experiment_name="base_experiment",
+                 experiment_name="ProgressiveTraining",
                  finetune_model=False,
-                 split_mode="case_in_test",):
+                 split_mode="case_in_test", ):
         self.model_names = [
             "resnet34", "resnet50", "resnet101",
             "densenet121", "densenet161", "densenet169",
@@ -29,6 +29,7 @@ class ConfigClass:
         self.box_presets = ["t1-t5", "clavicle-only", "complete-vertebrae", "whole"]
         self.split_modes = ["case_in_test", "case_in_train", "case_in_random"]
         self.loss_heads = ["arcface", "cosface", "adaface", 'softmax']
+        self.embedding_size = 512 
 
 
         # Basic run parameters
@@ -52,15 +53,15 @@ class ConfigClass:
         else:
             raise Exception(f"Loss head {self.loss_head} not found. Please choose from {self.loss_heads}")
 
-
         self.cuda_devices = [gpu, ]
         self.finetune_model = finetune_model
 
         # Experiment paths
-        self.prefix = "../experiments"
+        self.all_results = "../Rad-Progressive"
         self.experiment_name = experiment_name
-        self.results_dir = os.path.join(self.prefix, self.experiment_name)
-        self.checkpoint_dir = os.path.join(self.results_dir, self.box_preset, self.model_arch)
+
+        self.results_dir = os.path.join(self.all_results, self.experiment_name)
+        self.checkpoint_dir = os.path.join(self.results_dir, self.split_mode, self.box_preset, self.model_arch)
 
         # Dataset parameters
         self._setup_dataset_parameters()
@@ -83,9 +84,13 @@ class ConfigClass:
 
         if os.path.exists(dir_pebble7):
             self.dataset_root = dir_pebble7
-        else:
+        elif os.path.exists(dir_pebble6):
             self.dataset_root = dir_pebble6
+        else:
+            self.dataset_root = "/research/iprobe-sonymd/MSU-SPG-Radiography-Dataset/cropped-combined"
 
+        self.metadata_file = self.dataset_root.replace('cropped-combined',
+                                                       "IFACTS MASTER_github_splitted.xlsx")
         self.dataset_dir = os.path.join(self.dataset_root, self.box_preset)
         self.use_mxrecord = True
         self.width = 512
@@ -101,6 +106,7 @@ class ConfigClass:
         self.limit_train_batches = 250
         self.max_epoch = 1200
         self.learning_rate = 1e-4
+        self.weight_decay = 1e-4
 
     def _setup_data_transformations(self):
         # ImageNet statistics as default
@@ -125,7 +131,6 @@ class ConfigClass:
     def _make_results_dir(self):
         os.makedirs(self.checkpoint_dir, exist_ok=True)
 
-
     def _save_config(self):
         with open(os.path.join(self.checkpoint_dir, "config.txt"), "w") as file:
             for attr, val in self.__dict__.items():
@@ -138,6 +143,3 @@ class ConfigClass:
         for attr, val in self.__dict__.items():
             configs += f"{attr} = {val}\n"
         return configs
-
-
-
