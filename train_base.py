@@ -106,7 +106,6 @@ class LightningTrainer(pl.LightningModule):
 
 
 def get_datasets(cfg):
-
     # Recheck the dataset paths at the the inference time too
     cfg.resetup_dataset_root()
 
@@ -214,7 +213,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--gpu",
                         type=int,
-                        default=get_gpu_with_least_memory_over_period(20),
+                        default=get_gpu_with_least_memory_over_period(5),
                         help="Select which gpu you would like to use")
 
     parser.add_argument("--box_preset",
@@ -229,6 +228,11 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name",
                         type=str,
                         default="base_experiment",
+                        help="Select the experiment name")
+
+    parser.add_argument("--random_rotate",
+                        type=int,
+                        default=15,
                         help="Select the experiment name")
 
     args = parser.parse_args()

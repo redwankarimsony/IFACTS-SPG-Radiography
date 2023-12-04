@@ -16,7 +16,8 @@ class ConfigClass:
                  gpu=7,
                  experiment_name="ProgressiveTraining",
                  finetune_model=False,
-                 split_mode="case_in_test", ):
+                 split_mode="case_in_test", 
+                 enable_flip=True,):
         self.model_names = [
             "resnet34", "resnet50", "resnet101",
             "densenet121", "densenet161", "densenet169",
@@ -30,6 +31,7 @@ class ConfigClass:
         self.split_modes = ["case_in_test", "case_in_train", "case_in_random"]
         self.loss_heads = ["arcface", "cosface", "adaface", 'softmax']
         self.embedding_size = 512
+        self.enable_flip = enable_flip
 
 
         # Basic run parameters
@@ -112,15 +114,26 @@ class ConfigClass:
         # ImageNet statistics as default
         self.stat_mean = [0.485, 0.456, 0.406]
         self.stat_std = [0.229, 0.224, 0.225]
+        if self.enable_flip:
+            self.tfms_train = tf.Compose([
+                tf.ToTensor(),
+                tf.Resize((self.height, self.width)),
+                tf.RandomRotation(degrees=15),
+                tf.RandomPerspective(distortion_scale=0.2, p=0.3),
+                tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
+                tf.Normalize(mean=self.stat_mean, std=self.stat_std),
+                tf.RandomHorizontalFlip(p=0.5)
+            ])
+        else:
+            self.tfms_train = tf.Compose([
+                tf.ToTensor(),
+                tf.Resize((self.height, self.width)),
+                tf.RandomRotation(degrees=15),
+                tf.RandomPerspective(distortion_scale=0.2, p=0.3),
+                tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
+                tf.Normalize(mean=self.stat_mean, std=self.stat_std),
+            ])
 
-        self.tfms_train = tf.Compose([
-            tf.ToTensor(),
-            tf.Resize((self.height, self.width)),
-            tf.RandomRotation(degrees=15),
-            tf.RandomPerspective(distortion_scale=0.2, p=0.3),
-            tf.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
-            tf.Normalize(mean=self.stat_mean, std=self.stat_std)
-        ])
 
         self.tfms_valid = tf.Compose([
             tf.ToTensor(),
@@ -130,6 +143,7 @@ class ConfigClass:
 
     def _make_results_dir(self):
         os.makedirs(self.checkpoint_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.checkpoint_dir, "summary"), exist_ok=True)
 
     def _save_config(self):
         with open(os.path.join(self.checkpoint_dir, "config.txt"), "w") as file:

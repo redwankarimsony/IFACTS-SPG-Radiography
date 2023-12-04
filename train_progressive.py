@@ -132,7 +132,7 @@ class ProgressiveLightningTrainer(LightningModule):
 
 
 def get_callbacks(cfg):
-    early_stopper_callback = EarlyStopping(monitor="tmr_@_fmr", min_delta=0.00, patience=40, verbose=False, mode="max")
+    early_stopper_callback = EarlyStopping(monitor="tmr_@_fmr", min_delta=0.00, patience=20, verbose=False, mode="max")
 
     checkpoint_callback = ModelCheckpoint(save_top_k=2, monitor="tmr_@_fmr", mode="max",
                                           dirpath=cfg.checkpoint_dir,
@@ -212,6 +212,9 @@ if __name__ == "__main__":
 
     parser.add_argument("--split_mode", type=str, default="case_in_test",
                         choices={"case_in_test", "case_in_train", "case_in_random"})
+    # take a flag for horizontal flip
+    parser.add_argument("--enable_flip", action="store_true", default=False)
+
 
     args = parser.parse_args()
     print(f'Lowest GPU usage: {args.gpu}')

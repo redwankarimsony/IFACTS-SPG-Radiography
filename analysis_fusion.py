@@ -24,11 +24,13 @@ def generate_all_logit_predictions(results_dir='../Rad-Experiments', experiment_
     df = pd.read_csv(osp.join(results_dir, experiment_name, "summary", "summary.csv"))
 
     # Define a dictionary to store the predictions with keys touple of (model_name, box_preset)
-    # Load already saved predictions
+
     try:
+        # Load already saved predictions
         logit_predictions = load_saved_predictions(results_dir=results_dir, experiment_name=experiment_name,
                                                    verbose=True)
     except:
+        # If the predictions are not already saved, do the inference
         logit_predictions = dict()
 
     # Iterate each rows of the dataframe    
@@ -38,30 +40,32 @@ def generate_all_logit_predictions(results_dir='../Rad-Experiments', experiment_
         # Get the box preset
         box_preset = row["box_preset"]
         # Get the checkpoint file
-        print(results_dir)
+
         # Get the checkpoint directory
         checkpoint_dir = osp.join(results_dir,
                                   experiment_name,
                                   box_preset,
                                   model_name,
                                   row['saved_model'].split("/")[-1])
-        print(checkpoint_dir)
 
         # If the inference is not already done for this model, do it
-        try:
-            logit_predictions[(model_name, box_preset)]
-            print("Inference already done for {}".format((model_name, box_preset)))
-        except:
+        if (model_name, box_preset) not in logit_predictions.keys():
             print("Doing inference for {}".format((model_name, box_preset)))
             # Do the inference
             logit_predictions[(model_name, box_preset)] = inference(saved_model_path=checkpoint_dir,
                                                                     logits=True, map_location="cuda:7")
+            # Save the predictions
+            # Save the predictions
+            with open(osp.join(results_dir, experiment_name, "summary", "logit_predictions.pkl"), "wb") as f:
+                pickle.dump(logit_predictions, f)
+                print("Saved the predictions to {}".format(
+                    osp.join(results_dir, experiment_name, "summary", "logit_predictions.pkl")))
 
-        # Save the predictions
-        with open(osp.join(results_dir, experiment_name, "summary", "logit_predictions.pkl"), "wb") as f:
-            pickle.dump(logit_predictions, f)
-            print("Saved the predictions to {}".format(
-                osp.join(results_dir, experiment_name, "summary", "logit_predictions.pkl")))
+        else:
+            print("Inference already done for {}".format((model_name, box_preset)))
+
+
+
 
 
 def load_saved_predictions(results_dir='../Rad-Experiments', experiment_name="base_experiment", verbose=True):
@@ -95,18 +99,18 @@ def make_fusions(results_dir="../Rad-Experiments", experiment_name='base_experim
     all_fusions = []
 
     # Fuse the combinations
-    for combination_idx in combinations_idx:
+    for combination_idx in tqdm(combinations_idx):
 
         y_hats, keys = [], []
         for idx in combination_idx:
-            keys.append(chosen_keys[idx][0])
+            keys.append(chosen_keys[idx][0]+"+"+chosen_keys[idx][1])
             y_hats.append(logit_predictions[chosen_keys[idx]][0])
 
         y_hats_comb = sum(y_hats) / len(y_hats)
         y_trues = logit_predictions[chosen_keys[0]][1]
         all_filenames = logit_predictions[chosen_keys[0]][2]
 
-        accs = get_top_k_accuracies(F.softmax(y_hats_comb, dim=1), y_trues, k_max=5)
+        accs = get_top_k_accuracies(F.softmax(y_hats_comb, dim=1), y_trues, k_max=20)
 
         # print(tuple(keys), '\t\t', accs[0])
         all_fusions.append((tuple(keys), accs[0], accs))
@@ -122,7 +126,8 @@ def make_fusions(results_dir="../Rad-Experiments", experiment_name='base_experim
     print("\n\nBest Fusion\n")
     print(all_fusions[0][0])
     for idx, acc in enumerate(all_fusions[0][2]):
-        print(f"Top {idx + 1} Accuracy: {acc}")
+        # print(f"Top {idx + 1} Accuracy: {acc}")
+        print(acc)
 
     print("\n\n")
 
@@ -142,7 +147,7 @@ def make_fusions(results_dir="../Rad-Experiments", experiment_name='base_experim
     plt.ylim([0.8, .95])
     plt.xlabel("Model")
     plt.ylabel("Accuracy")
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -157,5 +162,5 @@ if __name__ == "__main__":
     # make_fusions
     make_fusions(results_dir=args.results_dir,
                  experiment_name=args.experiment_name,
-                 fuse_top=7,
-                 fuse_together=4)
+                 fuse_top=10,
+                 fuse_together=5)
