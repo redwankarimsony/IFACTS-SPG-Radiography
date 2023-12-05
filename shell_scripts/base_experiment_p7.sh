@@ -12,9 +12,10 @@ models=(
 )
 
 box_presets=(
-    t1-t5
-    clavicle-only
-    complete-vertebrae
+    # t1-t5
+    # clavicle-only
+    # complete-vertebrae
+    whole
 )
 
 counter=0

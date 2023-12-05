@@ -149,11 +149,11 @@ def get_logger(cfg):
 
 
 def get_callbacks(cfg):
-    early_stopper_callback = EarlyStopping(monitor="val_loss",
-                                           min_delta=0.00,
-                                           patience=40,
+    early_stopper_callback = EarlyStopping(monitor="val_acc_epoch",
+                                           min_delta=0.0001,
+                                           patience=20,
                                            verbose=False,
-                                           mode="min")
+                                           mode="max")
 
     checkpoint_callback = ModelCheckpoint(save_top_k=2,
                                           monitor="val_acc_epoch",
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     print(f'Lowest GPU usage: {args.gpu}')
 
     cfg = ConfigClass(**vars(args))
-    print(cfg)
+    # print(cfg)
 
     main(cfg)
 
@@ -248,5 +248,6 @@ if __name__ == "__main__":
     time.sleep(30)
 
     # Write the confirmation that code has finished running
-    with open(os.path.join(cfg.results_dir, "summary", "done.txt"), "w") as f:
-        f.write(f"{cfg.experiment_name} {cfg.model_arch} {cfg.box_preset} done")
+    with open(os.path.join(cfg.results_dir, "summary", "done.txt"), "a") as f:
+        confirmation = f"{cfg.experiment_name} {cfg.model_arch} {cfg.box_preset} done"
+        print(confirmation, file=f)

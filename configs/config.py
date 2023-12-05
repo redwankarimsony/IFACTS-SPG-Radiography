@@ -44,7 +44,7 @@ class ConfigClass:
         self.random_rotate = random_rotate
 
         # Experiment paths
-        self.prefix = "../Rad-Experiments-Rotation"
+        self.prefix = "../Rad-Experiments"
         self.experiment_name = experiment_name
         self.results_dir = os.path.join(self.prefix, self.experiment_name)
         self.checkpoint_dir = os.path.join(self.results_dir, self.box_preset, self.model_arch)
