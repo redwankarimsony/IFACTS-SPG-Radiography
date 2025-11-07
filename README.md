@@ -98,6 +98,7 @@ The ensemble effectively integrates local and global information, improving robu
   pages={4398-4410},
   keywords={Radiography;Forensics;Biological system modeling;Biometrics;Diagnostic radiography;Training;Probes;X-ray imaging;Feature extraction;Accuracy;Anthropology;deep neural networks;radiographic identification;region of interest},
   doi={10.1109/ACCESS.2025.3525579}}
+```
 
 ---
 
